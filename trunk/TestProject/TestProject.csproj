@@ -53,9 +53,6 @@
     <Compile Include="XMLFileSaverTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AuthoringTests.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\FFR2Explorer\FFR2Explorer.csproj">
       <Project>{946D2D4A-776C-46A4-8C4C-2AB9B167EA0E}</Project>
       <Name>FFR2Explorer</Name>
