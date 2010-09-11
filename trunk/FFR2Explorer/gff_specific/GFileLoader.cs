@@ -7,7 +7,7 @@ using System.IO;
 using DWORD = System.UInt32;
 
 namespace FFR2Explorer {
-    class GFileLoader {
+    public class GFileLoader {
         private const string STRUCT_LABEL = "STRUCT";
         private const string LIST_LABEL = "LIST";
 

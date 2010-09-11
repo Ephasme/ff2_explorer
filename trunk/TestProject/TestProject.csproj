@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{7D65A166-8D0E-403A-810B-BA88446B7D95}</ProjectGuid>
+    <ProjectGuid>{FDD0F01D-E779-4948-8614-2B25D4A522A3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TestFFR2Explorer</RootNamespace>
-    <AssemblyName>TestFFR2Explorer</AssemblyName>
+    <RootNamespace>TestProject</RootNamespace>
+    <AssemblyName>TestProject</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -53,13 +53,13 @@
     <Compile Include="XMLFileSaverTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AuthoringTests.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\FFR2Explorer\FFR2Explorer.csproj">
       <Project>{946D2D4A-776C-46A4-8C4C-2AB9B167EA0E}</Project>
       <Name>FFR2Explorer</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Shadow Include="Références de test\FFR2Explorer.accessor" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

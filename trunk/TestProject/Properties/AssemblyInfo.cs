@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Les informations générales relatives à un assembly dépendent de 
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("TestFFR2Explorer")]
+[assembly: AssemblyTitle("TestProject")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Aucune")]
-[assembly: AssemblyProduct("TestFFR2Explorer")]
+[assembly: AssemblyProduct("TestProject")]
 [assembly: AssemblyCopyright("Copyright © Aucune 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Le GUID suivant est pour l'ID de la typelib si ce projet est exposé à COM
-[assembly: Guid("a372bfc8-f0a5-441b-b865-88ab9f0ece72")]
+[assembly: Guid("7631f3cf-0d58-499b-9550-23049c6d5398")]
 
 // Les informations de version pour un assembly se composent des quatre valeurs suivantes :
 //

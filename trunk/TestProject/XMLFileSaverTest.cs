@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FFR2Explorer;
-namespace TestFFR2Explorer
+﻿using FFR2Explorer;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+namespace TestProject
 {
     
     
