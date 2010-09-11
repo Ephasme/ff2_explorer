@@ -54,6 +54,7 @@
     <Compile Include="datas_structure\CExoString.cs" />
     <Compile Include="gff_specific\GFile.cs" />
     <Compile Include="gff_specific\GBinaryReader.cs" />
+    <Compile Include="gff_specific\GFileSaver.cs" />
     <Compile Include="gff_specific\GHeader.cs" />
     <Compile Include="datas_structure\Field.cs" />
     <Compile Include="gff_specific\GFileLoader.cs" />

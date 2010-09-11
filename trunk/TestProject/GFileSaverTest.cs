@@ -1,15 +1,17 @@
-﻿using FFR2Explorer;
+﻿using FFR2Explorer.gff_specific;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FFR2Explorer;
+
 namespace TestProject
 {
     
     
     /// <summary>
-    ///Classe de test pour XMLFileSaverTest, destinée à contenir tous
-    ///les tests unitaires XMLFileSaverTest
+    ///Classe de test pour GFileSaverTest, destinée à contenir tous
+    ///les tests unitaires GFileSaverTest
     ///</summary>
     [TestClass()]
-    public class XMLFileSaverTest {
+    public class GFileSaverTest {
 
 
         private TestContext testContextInstance;
@@ -62,11 +64,11 @@ namespace TestProject
         ///Test pour save
         ///</summary>
         [TestMethod()]
-        public void xmlSaveTest() {
-            GFileLoader gFileLd = new GFileLoader("D:/NWN/modules/ffr2_repository/ext_ar_00.are");
-            string saving_path = "D:/NWN/modules/ffr2_repository/ext_ar_00.are.xml";
-            Struct root = gFileLd.RootStruct;
-            XMLFileSaver target = new XMLFileSaver(saving_path, root);
+        public void gffSaveTest() {
+            string path = "D:/NWN/modules/ffr2_repository/ext_ar_00.are";
+            GFileLoader gfileld = new GFileLoader(path);
+            Struct root = gfileld.RootStruct;
+            GFileSaver target = new GFileSaver(path+".xml", root);
             target.save();
         }
     }
