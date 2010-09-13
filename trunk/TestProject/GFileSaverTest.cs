@@ -1,11 +1,11 @@
 ﻿using FFR2Explorer.gff_specific;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FFR2Explorer;
+using System.IO;
 
-namespace TestProject
-{
-    
-    
+namespace TestProject {
+
+
     /// <summary>
     ///Classe de test pour GFileSaverTest, destinée à contenir tous
     ///les tests unitaires GFileSaverTest
@@ -13,6 +13,22 @@ namespace TestProject
     [TestClass()]
     public class GFileSaverTest {
 
+        public const string PATH = "D:/NWN/modules/ffr2_repository/ext_ar_00.are";
+        public string ext = Path.GetExtension(PATH);
+        
+        public GFieldFactory loader;
+        public GFileReader linread;
+        public GFileSaver saver;
+
+        public PrivateObject pv_loader;
+        public PrivateObject pv_linread;
+        public PrivateObject pv_saver;
+
+        public GFieldFactory_Accessor a_loader;
+        public GFileReader_Accessor a_linread;
+        public GFileSaver_Accessor a_saver;
+
+        public GStruct root;
 
         private TestContext testContextInstance;
 
@@ -27,6 +43,16 @@ namespace TestProject
             set {
                 testContextInstance = value;
             }
+        }
+
+        public GFileSaverTest() {
+            linread = new GFileReader(PATH);
+            pv_linread = new PrivateObject(linread);
+            a_linread = new GFileReader_Accessor(pv_linread);
+
+            saver = new GFileSaver(linread.getRootStruct(), PATH+".newGFF", ext);
+            pv_saver = new PrivateObject(saver);
+            a_saver = new GFileSaver_Accessor(pv_saver);
         }
 
         #region Attributs de tests supplémentaires
@@ -59,17 +85,13 @@ namespace TestProject
         //
         #endregion
 
-
         /// <summary>
-        ///Test pour save
+        ///Test pour populate
         ///</summary>
         [TestMethod()]
-        public void gffSaveTest() {
-            string path = "D:/NWN/modules/ffr2_repository/ext_ar_00.are";
-            GFileLoader gfileld = new GFileLoader(path);
-            Struct root = gfileld.RootStruct;
-            GFileSaver target = new GFileSaver(path+".xml", root);
-            target.save();
+        [DeploymentItem("FFR2Explorer.exe")]
+        public void GFileSaver_saveTest() {
+            a_saver.save();
         }
     }
 }

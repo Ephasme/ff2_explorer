@@ -8,14 +8,14 @@ using DWORD = System.UInt32;
 using System.IO;
 
 namespace FFR2Explorer {
-    public abstract class Field {
+    public abstract class GField {
 
         public String Label { get; set; }
-        public CompositeField Owner { get; set; }
+        public GCompositeField Owner { get; set; }
 
-        public Field(CompositeField owner, String label) {
+        public GField(String label) {
+            Owner = null;
             Label = label;
-            Owner = owner;
         }
     }
 }

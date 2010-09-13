@@ -8,6 +8,7 @@ using DWORD = System.UInt32;
 namespace FFR2Explorer {
     public struct GConst {
         #region Constantes de type GFF.
+        public const string VERSION = "V3.2";
         public const int STRUCT_VALUE_COUNT = 3;
         public const int STRUCT_SIZE = STRUCT_VALUE_COUNT * sizeof(DWORD);
         public const int LABEL_LENGTH = 16;

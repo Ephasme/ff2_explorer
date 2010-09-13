@@ -36,7 +36,7 @@ namespace FFR2Explorer {
         private const string XML_PAR_KEY = "type";
         private const string XML_PAR_TYPE = "type";
         private const string XML_PAR_LABEL = "label";
-        private const string XML_GFFTYPE_CEXOLOCSTRING = "CExoLocString";
+        private const string XML_GFFTYPE_CEXOLOCSTRING = "GCExoLocString";
 
         private const string XML_VALUE_NOT_FOUND = "Valeur non trouvée.";
         private const string XML_UNKNOWN_TYPE = "Type inconnu.";
@@ -50,8 +50,8 @@ namespace FFR2Explorer {
         private const string XML_TYPE_INT64 = "Int64";
         private const string XML_TYPE_FLOAT = "Float";
         private const string XML_TYPE_DOUBLE = "Double";
-        private const string XML_TYPE_CEXOSTRING = "CExoString";
-        private const string XML_TYPE_RESREF = "ResRef";
+        private const string XML_TYPE_CEXOSTRING = "GCExoString";
+        private const string XML_TYPE_RESREF = "GResRef";
         private const string XML_TYPE_VOID = "Void";
 
         private FileStream fs;
@@ -59,10 +59,10 @@ namespace FFR2Explorer {
 
         private Scale scale = new Scale(SCALING_STRING);
 
-        public Struct RootStruct { get; set; }
+        public GStruct RootStruct { get; set; }
         public string SavingPath { get; set; }
 
-        public XMLFileSaver(string path, Struct root) {
+        public XMLFileSaver(string path, GStruct root) {
             SavingPath = path;
             RootStruct = root;
         }
@@ -80,14 +80,14 @@ namespace FFR2Explorer {
             fs.Close();
         }
 
-        public void writeField(Field field) {
-            if (field is Struct) {
-                writeStruct((Struct)field);
-            } else if (field is List) {
-                writeList((List)field);
-            } else if (field is CExoLocString) {
-                CExoLocString els = (CExoLocString)field;
-                writeLine("<"+XML_FIELD+" "+XML_PAR_TYPE+"='"+XML_GFFTYPE_CEXOLOCSTRING+"' "+XML_PAR_LABEL+"='" + field.Label + "'>");
+        public void writeField(GField field) {
+            if (field is GStruct) {
+                writeStruct((GStruct)field);
+            } else if (field is GList) {
+                writeList((GList)field);
+            } else if (field is GCExoLocString) {
+                GCExoLocString els = (GCExoLocString)field;
+                writeLine("<" + XML_FIELD + " " + XML_PAR_TYPE + "='" + XML_GFFTYPE_CEXOLOCSTRING + "' " + XML_PAR_LABEL + "='" + field.Label + "'>");
                 scale++;
                 foreach (KeyValuePair<int, string> kvp in els.Value) {
                     writeLine("<" + XML_STRING + " " + XML_PAR_KEY + "='" + kvp.Key + "'>" + kvp.Value + "</" + XML_STRING + ">");
@@ -96,62 +96,62 @@ namespace FFR2Explorer {
             } else {
                 object value = XML_VALUE_NOT_FOUND;
                 string type = XML_UNKNOWN_TYPE;
-                if (field is SimpleField<int>) {
-                    value = (int)((SimpleField<int>)field).Value;
+                if (field is GSimpleField<int>) {
+                    value = (int)((GSimpleField<int>)field).Value;
                     type = XML_TYPE_INT;
-                } else if (field is SimpleField<uint>) {
-                    value = (uint)((SimpleField<uint>)field).Value;
+                } else if (field is GSimpleField<uint>) {
+                    value = (uint)((GSimpleField<uint>)field).Value;
                     type = XML_TYPE_DWORD;
-                } else if (field is SimpleField<short>) {
-                    value = (short)((SimpleField<short>)field).Value;
+                } else if (field is GSimpleField<short>) {
+                    value = (short)((GSimpleField<short>)field).Value;
                     type = XML_TYPE_SHORT;
-                } else if (field is SimpleField<char>) {
-                    value = (char)((SimpleField<char>)field).Value;
+                } else if (field is GSimpleField<char>) {
+                    value = (char)((GSimpleField<char>)field).Value;
                     type = XML_TYPE_CHAR;
-                } else if (field is SimpleField<byte>) {
-                    value = (byte)((SimpleField<byte>)field).Value;
+                } else if (field is GSimpleField<byte>) {
+                    value = (byte)((GSimpleField<byte>)field).Value;
                     type = XML_TYPE_BYTE;
-                } else if (field is LargeField<UInt64>) {
-                    value = (UInt64)((LargeField<UInt64>)field).Value;
+                } else if (field is GLargeField<UInt64>) {
+                    value = (UInt64)((GLargeField<UInt64>)field).Value;
                     type = XML_TYPE_DWORD64;
-                } else if (field is LargeField<Int64>) {
-                    value = (Int64)((LargeField<Int64>)field).Value;
+                } else if (field is GLargeField<Int64>) {
+                    value = (Int64)((GLargeField<Int64>)field).Value;
                     type = XML_TYPE_INT64;
-                } else if (field is SimpleField<float>) {
-                    value = (float)((SimpleField<float>)field).Value;
+                } else if (field is GSimpleField<float>) {
+                    value = (float)((GSimpleField<float>)field).Value;
                     type = XML_TYPE_FLOAT;
-                } else if (field is LargeField<double>) {
-                    value = (double)((LargeField<double>)field).Value;
+                } else if (field is GLargeField<double>) {
+                    value = (double)((GLargeField<double>)field).Value;
                     type = XML_TYPE_DOUBLE;
-                } else if (field is CExoString) {
-                    value = (string)((CExoString)field).Value;
+                } else if (field is GCExoString) {
+                    value = (string)((GCExoString)field).Value;
                     type = XML_TYPE_CEXOSTRING;
-                } else if (field is ResRef) {
-                    value = (string)((ResRef)field).Value;
+                } else if (field is GResRef) {
+                    value = (string)((GResRef)field).Value;
                     type = XML_TYPE_RESREF;
-                } else if (field is LargeField<byte[]>) {
-                    value = (byte[])((SimpleField<byte[]>)field).Value;
+                } else if (field is GLargeField<byte[]>) {
+                    value = (byte[])((GSimpleField<byte[]>)field).Value;
                     type = XML_TYPE_VOID;
                 }
-                writeLine("<"+XML_FIELD+" "+XML_PAR_TYPE+"='" + type.ToString() + "' "+XML_PAR_LABEL+"='" + field.Label + "'>" + value.ToString() + "</"+XML_FIELD+">");
+                writeLine("<" + XML_FIELD + " " + XML_PAR_TYPE + "='" + type.ToString() + "' " + XML_PAR_LABEL + "='" + field.Label + "'>" + value.ToString() + "</" + XML_FIELD + ">");
             }
         }
 
-        private void writeList(List list) {
-            writeLine("<"+XML_LIST+">");
+        private void writeList(GList list) {
+            writeLine("<" + XML_LIST + " " + XML_PAR_LABEL + "='" + list.Label + "'>");
             writeChilds(list);
-            writeLine("</"+XML_LIST+">");
+            writeLine("</" + XML_LIST + ">");
         }
 
-        public void writeStruct(Struct str) {
-            writeLine("<"+XML_STRUCT+">");
+        public void writeStruct(GStruct str) {
+            writeLine("<" + XML_STRUCT + ">");
             writeChilds(str);
-            writeLine("</"+XML_STRUCT+">");
+            writeLine("</" + XML_STRUCT + ">");
         }
 
-        private void writeChilds(CompositeField cpsit) {
+        private void writeChilds(GCompositeField cpsit) {
             scale++;
-            foreach (Field fld in cpsit.Childs) {
+            foreach (GField fld in cpsit.get()) {
                 writeField(fld);
             }
             scale--;

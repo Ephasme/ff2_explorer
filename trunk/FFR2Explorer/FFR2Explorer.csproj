@@ -48,21 +48,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="datas_structure\CompositeField.cs" />
+    <Compile Include="datas_structure\CompositeFields.cs" />
     <Compile Include="gff_specific\GDatas.cs" />
-    <Compile Include="datas_structure\CExoLocString.cs" />
-    <Compile Include="datas_structure\CExoString.cs" />
     <Compile Include="gff_specific\GFile.cs" />
     <Compile Include="gff_specific\GBinaryReader.cs" />
+    <Compile Include="gff_specific\GFileReader.cs" />
     <Compile Include="gff_specific\GFileSaver.cs" />
     <Compile Include="gff_specific\GHeader.cs" />
     <Compile Include="datas_structure\Field.cs" />
-    <Compile Include="gff_specific\GFileLoader.cs" />
-    <Compile Include="datas_structure\LargeField.cs" />
-    <Compile Include="datas_structure\List.cs" />
-    <Compile Include="datas_structure\ResRef.cs" />
-    <Compile Include="datas_structure\SimpleField.cs" />
-    <Compile Include="datas_structure\Struct.cs" />
+    <Compile Include="gff_specific\GFieldFactory.cs" />
+    <Compile Include="datas_structure\LargeFields.cs" />
+    <Compile Include="datas_structure\SimpleFields.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -84,6 +80,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="datas_structure\DataStructure.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -1,15 +1,18 @@
-﻿using FFR2Explorer;
+﻿using FFR2Explorer.gff_specific;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FFR2Explorer;
+using System.Collections.Generic;
+
 namespace TestProject
 {
     
     
     /// <summary>
-    ///Classe de test pour XMLFileSaverTest, destinée à contenir tous
-    ///les tests unitaires XMLFileSaverTest
+    ///Classe de test pour GFileReaderTest, destinée à contenir tous
+    ///les tests unitaires GFileReaderTest
     ///</summary>
     [TestClass()]
-    public class XMLFileSaverTest {
+    public class GFileReaderTest {
 
 
         private TestContext testContextInstance;
@@ -59,15 +62,35 @@ namespace TestProject
 
 
         /// <summary>
-        ///Test pour save
+        ///Test pour Constructeur GFileLinearReader
         ///</summary>
         [TestMethod()]
-        public void xmlSaveTest() {
-/*            GFileLoader gFileLd = new GFileLoader("D:/NWN/modules/ffr2_repository/ext_ar_00.gic");
-            string saving_path = "D:/NWN/modules/ffr2_repository/ext_ar_00.git.xml";
-            GStruct root = gFileLd.RootStruct;
-            XMLFileSaver target = new XMLFileSaver(saving_path, root);
-            target.save();*/
+        [DeploymentItem("FFR2Explorer.exe")]
+        public void GFileReader_constructorTest() {
+            string path = "D:/NWN/localvault/aluviandarkstar.bic";
+            GFileReader_Accessor target = new GFileReader_Accessor(path);
+        }
+
+        /// <summary>
+        ///Test pour getRootStruct
+        ///</summary>
+        [TestMethod()]
+        public void GFileReader_getRootStructTest() {
+            string path = "D:/NWN/localvault/aluviandarkstar.bic";
+            GFileReader target = new GFileReader(path);
+            GStruct actual = target.getRootStruct();
+        }
+
+        /// <summary>
+        ///Test pour getOrphelins
+        ///</summary>
+        [TestMethod()]
+        public void GFileReader_getOrphelinsTest() {
+            string path = "D:/NWN/localvault/aluviandarkstar.bic";
+            GFileReader target = new GFileReader(path);
+            PrivateObject pv = new PrivateObject(target, new PrivateType(target.GetType()));
+            GFileReader_Accessor a_target = new GFileReader_Accessor(pv);
+            List<GField> orph = GFileReader.getOrphelins(a_target.l_fld, a_target.l_str);
         }
     }
 }

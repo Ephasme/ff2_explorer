@@ -37,7 +37,7 @@ namespace FFR2Explorer {
             FileStrm = File.Create(FilePath + ".newGFF");
             BinaryWriter bw = new BinaryWriter(FileStrm);
 
-            List<byte[]> listIndexes = new List<byte[]>();
+            GList<byte[]> listIndexes = new GList<byte[]>();
 
             analyseField(rt);
 
@@ -51,10 +51,10 @@ namespace FFR2Explorer {
 
         public void analyseField(GField fld) {
             #region Initialisation des listes.
-            structList = new List<GStruct>();
-            listList = new List<GList>();
-            fieldList = new List<GField>();
-            labelList = new List<string>();
+            structList = new GList<GStruct>();
+            listList = new GList<GList>();
+            fieldList = new GList<GField>();
+            labelList = new GList<string>();
             #endregion
             if (fld is GCompositeField) {
                 GCompositeField cpsit = (GCompositeField)fld;
