@@ -146,9 +146,10 @@ namespace FFR2Explorer.gff_specific {
 
         #region Dictionnaires de positionnement.
         Dictionary<GStruct, Position> d_str_pos;
-        Dictionary<GStruct, long> d_str_lidx;
+        Dictionary<GStruct, long> d_str_fldind;
+        Dictionary<GList, long> d_lst_lstidx;
         Dictionary<GField, Position> d_fld_pos;
-        Dictionary<GField, Position> d_l_fld_pos;
+        Dictionary<GField, Position> d_fld_flddat;
         Dictionary<string, Position> d_lab_pos;
         #endregion
 
@@ -195,9 +196,10 @@ namespace FFR2Explorer.gff_specific {
             _bw = new BinaryWriter(_fs);
 
             d_str_pos = new Dictionary<GStruct, Position>();
-            d_str_lidx = new Dictionary<GStruct, long>();
+            d_str_fldind = new Dictionary<GStruct, long>();
+            d_lst_lstidx = new Dictionary<GList, long>();
             d_fld_pos = new Dictionary<GField, Position>();
-            d_l_fld_pos = new Dictionary<GField, Position>();
+            d_fld_flddat = new Dictionary<GField, Position>();
             d_lab_pos = new Dictionary<string, Position>();
 
             l_fstr = new List<GFieldSTR>();
@@ -222,7 +224,6 @@ namespace FFR2Explorer.gff_specific {
         }
 
         public void save() {
-            writeExtAndVersion();
             // On laisse la place pour les infos d'en-tête.
             _bw.Seek(GHeaderSTR.SIZE, SeekOrigin.Begin);
             // On décortique la structure racine.
@@ -234,6 +235,7 @@ namespace FFR2Explorer.gff_specific {
             writeLargeFields();
             writeFieldIndices();
             writeListIndices();
+            writeHeader();
 
             linkStructs();
             linkFields();
@@ -363,7 +365,7 @@ namespace FFR2Explorer.gff_specific {
             foreach (GStruct str in l_str) {
                 GStructSTR sstr = new GStructSTR();
                 sstr.FieldCount = BitConverter.ToUInt32(BitConverter.GetBytes(str.get().Count), 0);
-                int type = (str.Owner == null) ? (-1) : (0);
+                int type = (str.Owner == null) ? (-1) : (1);
                 sstr.Type = BitConverter.ToUInt32(BitConverter.GetBytes(type), 0);
                 sstr.DataOrOffset = BitConverter.ToUInt32(BitConverter.GetBytes(0), 0);
                 Position p = new Position();
@@ -399,7 +401,7 @@ namespace FFR2Explorer.gff_specific {
                 Position p = new Position();
                 p.index = index++;
                 p.offset = _bw.BaseStream.Position;
-                d_l_fld_pos.Add(lfld, p);
+                d_fld_flddat.Add(lfld, p);
                 if (lfld is GDword64) {
                     _bw.Write(((GDword64)lfld).Value);
                 } else if (lfld is GInt64) {
@@ -418,15 +420,15 @@ namespace FFR2Explorer.gff_specific {
                 } else if (lfld is GCExoLocString) {
                     long start = _bw.BaseStream.Position;
                     GCExoLocString exolstr = (GCExoLocString)lfld;
-                    int totalSize = 8;
-                    int strCount = exolstr.Value.Count;
-                    int strRef = (int)exolstr.StringRef;
+                    uint totalSize = 8;
+                    uint strCount = (uint)exolstr.Value.Count;
+                    uint strRef = exolstr.StringRef;
                     _bw.Write(totalSize);
                     _bw.Write(strRef);
                     _bw.Write(strCount);
                     Dictionary<int, string> dic = exolstr.Value;
                     foreach (KeyValuePair<int, string> kvp in dic) {
-                        totalSize += 8 + kvp.Value.Length;
+                        totalSize += (uint)(8 + kvp.Value.Length);
                         _bw.Write(kvp.Key);
                         _bw.Write(kvp.Value.Length);
                         _bw.Write(kvp.Value.ToCharArray());
@@ -446,7 +448,7 @@ namespace FFR2Explorer.gff_specific {
             _h.Infos[GHeaderSTR.FIELD_INDICES_OFFSET] = (uint)_bw.BaseStream.Position;
             foreach (GStruct str in l_str) {
                 if (str.get().Count > 1) {
-                    d_str_lidx.Add(str, _bw.BaseStream.Position);
+                    d_str_fldind.Add(str, _bw.BaseStream.Position);
                     foreach (GField fld in str.get()) {
                         Position p = d_fld_pos[fld];
                         _bw.Write(p.index);
@@ -458,6 +460,7 @@ namespace FFR2Explorer.gff_specific {
         private void writeListIndices() {
             _h.Infos[GHeaderSTR.LIST_INDICES_OFFSET] = (uint)_bw.BaseStream.Position;
             foreach (GList lst in l_lst) {
+                d_lst_lstidx.Add(lst, _bw.BaseStream.Position);
                 _bw.Write(lst.get().Count);
                 foreach (GField fld in lst.get()) {
                     GStruct str = (GStruct)fld;
@@ -466,6 +469,28 @@ namespace FFR2Explorer.gff_specific {
                 }
             }
             _h.Infos[GHeaderSTR.LIST_INDICES_COUNT] = ((uint)_bw.BaseStream.Position) - _h.Infos[GHeaderSTR.LIST_INDICES_OFFSET];
+        }
+        private void writeHeader() {
+            long pos = _bw.BaseStream.Position;
+            _bw.BaseStream.Position = 0;
+            ext = ext.ToUpper();
+            ext = ext.Remove(0, 1);
+            ext = ext.PadRight(GHeader.FILE_TYPE_SIZE);
+            _bw.Write(ext.ToCharArray());
+            _bw.Write(ver.ToCharArray());
+            _bw.Write(_h.Infos[GHeader.STRUCT_OFFSET]);
+            _bw.Write(_h.Infos[GHeader.STRUCT_COUNT]);
+            _bw.Write(_h.Infos[GHeader.FIELD_OFFSET]);
+            _bw.Write(_h.Infos[GHeader.FIELD_COUNT]);
+            _bw.Write(_h.Infos[GHeader.LABEL_OFFSET]);
+            _bw.Write(_h.Infos[GHeader.LABEL_COUNT]);
+            _bw.Write(_h.Infos[GHeader.FIELD_DATA_OFFSET]);
+            _bw.Write(_h.Infos[GHeader.FIELD_DATA_COUNT]);
+            _bw.Write(_h.Infos[GHeader.FIELD_INDICES_OFFSET]);
+            _bw.Write(_h.Infos[GHeader.FIELD_INDICES_COUNT]);
+            _bw.Write(_h.Infos[GHeader.LIST_INDICES_OFFSET]);
+            _bw.Write(_h.Infos[GHeader.LIST_INDICES_COUNT]);
+            _bw.BaseStream.Position = pos;
         }
 
         private void linkStructs() {
@@ -476,7 +501,7 @@ namespace FFR2Explorer.gff_specific {
                 int index = kvp.Value.index;
                 if (str.get().Count > 1) {
                     // On le relie à une liste de fields.
-                    long l_offset = d_str_lidx[str];
+                    long l_offset = d_str_fldind[str];
                     long pos = _bw.BaseStream.Position;
                     _bw.BaseStream.Position = offset + sizeof(UInt32);
                     uint towrite = (uint)l_offset - _h.Infos[GHeaderSTR.FIELD_INDICES_OFFSET];
@@ -492,9 +517,8 @@ namespace FFR2Explorer.gff_specific {
                 }
             }
         }
-
         private void linkFields() {
-            foreach (KeyValuePair<GField, Position> kvp in d_fld_pos){
+            foreach (KeyValuePair<GField, Position> kvp in d_fld_pos) {
                 GField fld = kvp.Key;
                 long offset = kvp.Value.offset;
                 int index = kvp.Value.index;
@@ -506,6 +530,21 @@ namespace FFR2Explorer.gff_specific {
                     _bw.BaseStream.Position = offset + 2 * sizeof(UInt32);
                     _bw.Write((uint)s_index);
                     _bw.BaseStream.Position = pos;
+                } else if (fld is GList) {
+                    GList lst = (GList)fld;
+                    uint l_pos = (uint)d_lst_lstidx[lst] - _h.Infos[GHeaderSTR.LIST_INDICES_OFFSET];
+                    long pos = _bw.BaseStream.Position;
+                    _bw.BaseStream.Position = offset + 2 * sizeof(UInt32);
+                    _bw.Write(l_pos);
+                    _bw.BaseStream.Position = pos;
+                } else {
+                    if (d_fld_flddat.ContainsKey(fld)) {
+                        uint fd_pos = (uint)d_fld_flddat[fld].offset - _h.Infos[GHeaderSTR.FIELD_DATA_OFFSET];
+                        long pos = _bw.BaseStream.Position;
+                        _bw.BaseStream.Position = offset + 2 * sizeof(UInt32);
+                        _bw.Write(fd_pos);
+                        _bw.BaseStream.Position = pos;
+                    }
                 }
             }
         }
@@ -577,13 +616,6 @@ namespace FFR2Explorer.gff_specific {
                     analyseField(child);
                 }
             }
-        }
-        private void writeExtAndVersion() {
-            ext = ext.ToUpper();
-            ext = ext.Remove(0, 1);
-            ext = ext.PadRight(GHeader.FILE_TYPE_SIZE);
-            _bw.Write(ext.ToCharArray());
-            _bw.Write(ver.ToCharArray());
         }
     }
 }

@@ -67,7 +67,7 @@ namespace TestProject
         [TestMethod()]
         [DeploymentItem("FFR2Explorer.exe")]
         public void GFileReader_constructorTest() {
-            string path = "D:/NWN/localvault/aluviandarkstar.bic";
+            string path = "D:/NWN/modules/ffr2_repository/ext_ar_00.are.newGFF";
             GFileReader_Accessor target = new GFileReader_Accessor(path);
         }
 
