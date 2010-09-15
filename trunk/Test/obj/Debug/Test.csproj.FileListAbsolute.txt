@@ -1,9 +1,0 @@
-D:\Programmation\workspace\FFR2.2\Test\obj\Debug\ResolveAssemblyReference.cache
-D:\Programmation\workspace\FFR2.2\Test\bin\Debug\Test.dll
-D:\Programmation\workspace\FFR2.2\Test\bin\Debug\Test.pdb
-D:\Programmation\workspace\FFR2.2\Test\bin\Debug\GFFSystem.dll
-D:\Programmation\workspace\FFR2.2\Test\bin\Debug\GFFSystem.pdb
-D:\Programmation\workspace\FFR2.2\Test\bin\Debug\GFFSystem_Accessor.dll
-D:\Programmation\workspace\FFR2.2\Test\bin\Debug\GFFSystem_Accessor.pdb
-D:\Programmation\workspace\FFR2.2\Test\obj\Debug\Test.dll
-D:\Programmation\workspace\FFR2.2\Test\obj\Debug\Test.pdb
