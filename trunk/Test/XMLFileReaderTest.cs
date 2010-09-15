@@ -1,15 +1,17 @@
-﻿using FFR2Explorer;
+﻿using Bioware.XML;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-namespace TestProject
+using Bioware.Virtual;
+using Bioware.GFF;
+namespace Test
 {
     
     
     /// <summary>
-    ///Classe de test pour XMLFileSaverTest, destinée à contenir tous
-    ///les tests unitaires XMLFileSaverTest
+    ///Classe de test pour XMLFileReaderTest, destinée à contenir tous
+    ///les tests unitaires XMLFileReaderTest
     ///</summary>
     [TestClass()]
-    public class XMLFileSaverTest {
+    public class XMLFileReaderTest {
 
 
         private TestContext testContextInstance;
@@ -59,15 +61,17 @@ namespace TestProject
 
 
         /// <summary>
-        ///Test pour save
+        ///Test pour Constructeur XMLFileReader
         ///</summary>
         [TestMethod()]
-        public void xmlSaveTest() {
-/*            GFileLoader gFileLd = new GFileLoader("D:/NWN/modules/ffr2_repository/ext_ar_00.gic");
-            string saving_path = "D:/NWN/modules/ffr2_repository/ext_ar_00.git.xml";
-            GStruct root = gFileLd.RootStruct;
-            XMLFileSaver target = new XMLFileSaver(saving_path, root);
-            target.save();*/
+        [DeploymentItem("GFFSystem.dll")]
+        public void XMLFileReaderConstructorTest() {
+            string path = "D:\\NWN\\modules\\ffr2_repository\\sys_ar_00.are";
+            GFileReader reader = new GFileReader(path);
+            VStruct root = reader.getRootStruct();
+            XMLFileSaver saver = new XMLFileSaver(path+".xml", root);
+            saver.save();
+            XMLFileReader_Accessor target = new XMLFileReader_Accessor(path + ".xml");
         }
     }
 }
