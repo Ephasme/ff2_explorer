@@ -1,0 +1,7 @@
+D:\Programmation\workspace\FFR2.2\FFR2Explorer\bin\Debug\GFFSystem.dll
+D:\Programmation\workspace\FFR2.2\FFR2Explorer\bin\Debug\GFFSystem.pdb
+D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\ResolveAssemblyReference.cache
+D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\Bioware.Properties.Resources.resources
+D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\GFFSystem.csproj.GenerateResource.Cache
+D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\GFFSystem.dll
+D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\GFFSystem.pdb
