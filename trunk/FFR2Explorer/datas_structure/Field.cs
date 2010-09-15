@@ -13,6 +13,13 @@ namespace FFR2Explorer {
         public String Label { get; set; }
         public GCompositeField Owner { get; set; }
 
+        public bool IsRoot {
+            get {
+                return (Owner == null);
+            }
+            private set { }
+        }
+
         public GField(String label) {
             Owner = null;
             Label = label;

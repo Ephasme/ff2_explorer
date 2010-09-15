@@ -6,125 +6,7 @@ using System.IO;
 using System.Collections;
 
 namespace FFR2Explorer.gff_specific {
-
     public class GFileSaver {
-        private List<string> l_label;
-
-        /*
-        private string path;
-        private GStruct root;
-        private string ext;
-
-        private char[] type = new char[GHeader.FILE_TYPE_SIZE];
-        private char[] version = new char[GHeader.FILE_VERSION_SIZE];
-
-        private uint structOffset;
-        private int structCount;
-
-        private uint fieldOffset;
-        private int fieldCount;
-
-        private uint fieldIndicesOffset;
-        private int fieldIndicesCount;
-
-        private uint labelOffset;
-        private int labelCount;
-
-        private uint fieldDataOffset;
-        private int fieldDataCount;
-
-        private uint listIndicesOffset;
-        private int listIndicesCount;
-
-        private List<GStruct> l_str_fld;
-        private List<GList> l_list_fld;
-
-        public GFileSaver(string path, string ext, GStruct root) {
-            l_str_fld = new List<GStruct>();
-            l_list_fld = new List<GList>();
-            this.path = path;
-            this.ext = ext;
-            this.root = root;
-        }
-
-        public void save() {
-            analyse(root);
-            calculateHeader();
-            populate();
-        }
-
-        FileStream fs;
-        BinaryWriter br;
-
-        private void populate() {
-            if (File.Exists(path)) {
-                fs = File.Open(path, FileMode.Truncate);
-            } else {
-                fs = File.Open(path, FileMode.CreateNew);
-            }
-            br = new BinaryWriter(fs);
-            br.BaseStream.Position = 0;
-            ext = ext.Remove(0, 1);
-            ext = ext.ToUpper();
-            ext = ext.PadRight(4);
-            br.Write(ext.ToCharArray());
-            string version = "V3.2";
-            br.Write(version.ToCharArray());
-
-            // Write structures.
-            foreach (GStruct str in l_str_fld) {
-                writeStruct(str);
-            }
-
-        }
-        private void calculateHeader() {
-            structOffset = GHeader.FILE_TYPE_SIZE + GHeader.FILE_VERSION_SIZE + 12 * sizeof(uint);
-            structCount = l_str_fld.Count;
-            fieldOffset = structOffset + (uint)structCount * GConst.STRUCT_SIZE;
-            fieldCount = l_simple_fld.Count + l_complex_fld.Count + l_list_fld.Count;
-            labelOffset = fieldOffset + (uint)fieldCount * GConst.STRUCT_SIZE;
-            labelCount = l_label.Count;
-            fieldDataOffset = labelOffset + (uint)l_label.Count * GConst.LABEL_LENGTH;
-            fieldDataCount = calculateFieldDataCount();
-            fieldIndicesOffset = fieldDataOffset + (uint)fieldDataCount;
-            fieldIndicesCount = l_complex_fld.Count;
-            listIndicesOffset = fieldIndicesOffset + (uint)fieldIndicesCount * sizeof(UInt32);
-            listIndicesCount = calculateListIndicesCount();
-        }
-        private int calculateListIndicesCount() {
-            int size = 0;
-            foreach (GList list in l_list_fld) {
-                size += list.get().Count + sizeof(UInt32);
-            }
-            return size;
-        }
-
-        private int calculateFieldDataCount() {
-            int size = 0;
-            size += l_dword64.Count * sizeof(UInt64);
-            size += l_int64.Count * sizeof(Int64);
-            size += l_double.Count * sizeof(double);
-            foreach (GCExoString exostr in l_exostr) {
-                String str = exostr.Value;
-                size += sizeof(int);
-                size += str.Length;
-            }
-            size += l_resref.Count * GConst.RESREF_MAX_LENGTH + 1;
-            foreach (GCExoLocString exolocstr in l_exolocstr) {
-                size += 3 * sizeof(int);
-                Dictionary<int, string> dic = exolocstr.Value;
-                foreach (KeyValuePair<int, string> kvp in dic) {
-                    size += kvp.Value.Length + 2 * sizeof(int);
-                }
-            }
-            foreach (GVoid v in l_void) {
-                size += v.Value.Length;
-            }
-            return size;
-        }
-
-        }*/
-
         GHeaderSTR _h;
 
         #region Stream et writer.
@@ -142,6 +24,10 @@ namespace FFR2Explorer.gff_specific {
         public struct Position {
             public int index;
             public long offset;
+            public Position(int index, long offset) {
+                this.index = index;
+                this.offset = offset;
+            }
         }
 
         #region Dictionnaires de positionnement.
@@ -161,6 +47,7 @@ namespace FFR2Explorer.gff_specific {
         #region Listes par type de champ.
         private List<GField> l_simple_fld;
         private List<GField> l_complex_fld;
+        private List<GField> l_large_fld;
         private List<GField> l_cpsit_fld;
         #endregion
 
@@ -179,6 +66,9 @@ namespace FFR2Explorer.gff_specific {
         private List<GVoid> l_void;
         #endregion
 
+        private List<GField> l_fld;
+        private List<string> l_label;
+
         public GFileSaver(GStruct root, string path, string ext) {
             initVars(root, path, ext);
         }
@@ -186,7 +76,7 @@ namespace FFR2Explorer.gff_specific {
             this.root = root;
             this.path = path;
             this.ext = ext;
-            this.ver = GConst.VERSION;
+            this.ver = GHeaderSTR.VERSION;
             _h = (new GHeaderSTR()).init();
             if (File.Exists(path)) {
                 _fs = File.Open(path, FileMode.Truncate);
@@ -207,6 +97,7 @@ namespace FFR2Explorer.gff_specific {
 
             l_simple_fld = new List<GField>();
             l_complex_fld = new List<GField>();
+            l_large_fld = new List<GField>();
             l_cpsit_fld = new List<GField>();
 
             l_str = new List<GStruct>();
@@ -221,6 +112,7 @@ namespace FFR2Explorer.gff_specific {
             l_void = new List<GVoid>();
 
             l_label = new List<string>();
+            l_fld = new List<GField>();
         }
 
         public void save() {
@@ -241,142 +133,31 @@ namespace FFR2Explorer.gff_specific {
             linkFields();
         }
 
-        private void writeAllFields() {
-            int index = 0;
-            _h.Infos[GHeaderSTR.FIELD_OFFSET] = (uint)_bw.BaseStream.Position;
-            #region A améliorer... mais fonctionnel.
-            foreach (GField fld in l_simple_fld) {
-                GFieldSTR sfld = new GFieldSTR();
-                byte[] bytes = new byte[sizeof(UInt32)];
-                sfld.DataOrOffset = 0;
-                if (fld is GByte) {
-                    sfld.Type = (uint)GConst.BYTE;
-                    byte[] tp = BitConverter.GetBytes(((GByte)fld).Value);
-                    for (int i = 0; i < sizeof(UInt32) && i < tp.Length; i++) {
-                        bytes[i] = tp[i];
-                    }
-                } else if (fld is GChar) {
-                    sfld.Type = (uint)GConst.CHAR;
-                    byte[] tp = BitConverter.GetBytes(((GChar)fld).Value);
-                    for (int i = 0; i < sizeof(UInt32) && i < tp.Length; i++) {
-                        bytes[i] = tp[i];
-                    }
-                } else if (fld is GWord) {
-                    sfld.Type = (uint)GConst.WORD;
-                    byte[] tp = BitConverter.GetBytes(((GWord)fld).Value);
-                    for (int i = 0; i < 4 && i < tp.Length; i++) {
-                        bytes[i] = tp[i];
-                    }
-                } else if (fld is GShort) {
-                    sfld.Type = (uint)GConst.SHORT;
-                    byte[] tp = BitConverter.GetBytes(((GShort)fld).Value);
-                    for (int i = 0; i < sizeof(UInt32) && i < tp.Length; i++) {
-                        bytes[i] = tp[i];
-                    }
-                } else if (fld is GDword) {
-                    sfld.Type = GConst.DWORD;
-                    byte[] tp = BitConverter.GetBytes(((GDword)fld).Value);
-                    for (int i = 0; i < sizeof(UInt32) && i < tp.Length; i++) {
-                        bytes[i] = tp[i];
-                    }
-                } else if (fld is GInt) {
-                    sfld.Type = GConst.INT;
-                    byte[] tp = BitConverter.GetBytes(((GInt)fld).Value);
-                    for (int i = 0; i < sizeof(UInt32) && i < tp.Length; i++) {
-                        bytes[i] = tp[i];
-                    }
-                } else if (fld is GFloat) {
-                    sfld.Type = GConst.FLOAT;
-                    byte[] tp = BitConverter.GetBytes(((GFloat)fld).Value);
-                    for (int i = 0; i < sizeof(UInt32) && i < tp.Length; i++) {
-                        bytes[i] = tp[i];
-                    }
-                }
-                sfld.DataOrOffset = BitConverter.ToUInt32(bytes, 0);
-                sfld.LabelIndex = BitConverter.ToUInt32(BitConverter.GetBytes(l_label.IndexOf(fld.Label)), 0);
-                Position p = new Position();
-                p.index = index++;
-                p.offset = _bw.BaseStream.Position;
-                d_fld_pos.Add(fld, p);
-                writeField(sfld);
-            }
-            foreach (GField fld in l_complex_fld) {
-                GFieldSTR sfld = new GFieldSTR();
-                sfld.DataOrOffset = (uint)0;
-                if (fld is GDword64) {
-                    sfld.Type = (uint)GConst.DWORD64;
-                } else if (fld is GInt64) {
-                    sfld.Type = (uint)GConst.INT64;
-                } else if (fld is GDouble) {
-                    sfld.Type = (uint)GConst.DOUBLE;
-                } else if (fld is GCExoString) {
-                    sfld.Type = (uint)GConst.CEXOSTRING;
-                } else if (fld is GResRef) {
-                    sfld.Type = (uint)GConst.RESREF;
-                } else if (fld is GCExoLocString) {
-                    sfld.Type = (uint)GConst.CEXOLOCSTRING;
-                } else if (fld is GVoid) {
-                    sfld.Type = (uint)GConst.VOID;
-                }
-                sfld.LabelIndex = BitConverter.ToUInt32(BitConverter.GetBytes(l_label.IndexOf(fld.Label)), 0);
-                Position p = new Position();
-                p.index = index++;
-                p.offset = _bw.BaseStream.Position;
-                d_fld_pos.Add(fld, p);
-                writeField(sfld);
-            }
-            foreach (GStruct str in l_str) {
-                // ATTENTION //
-                // La structure n'est ajoutée ici qu'à condition qu'elle ne soit pas nulle et pas possédée par une liste !! //
-                if (str.Owner != null && str.Owner is GStruct) {
-                    GFieldSTR sfld = new GFieldSTR();
-                    sfld.DataOrOffset = (uint)l_str.IndexOf(str);
-                    sfld.Type = (uint)GConst.STRUCT;
-                    if (l_label.IndexOf(str.Label) != -1) {
-                        sfld.LabelIndex = BitConverter.ToUInt32(BitConverter.GetBytes(l_label.IndexOf(str.Label)), 0);
-                    } else {
-                        sfld.LabelIndex = (uint)0;
-                    }
-                    Position p = new Position();
-                    p.index = index++;
-                    p.offset = _bw.BaseStream.Position;
-                    d_fld_pos.Add(str, p);
-                    writeField(sfld);
-                }
-            }
-            foreach (GList lst in l_lst) {
-                GFieldSTR sfld = new GFieldSTR();
-                sfld.DataOrOffset = (uint)0;
-                sfld.Type = (uint)GConst.LIST;
-                sfld.LabelIndex = BitConverter.ToUInt32(BitConverter.GetBytes(l_label.IndexOf(lst.Label)), 0);
-                Position p = new Position();
-                p.index = index++;
-                p.offset = _bw.BaseStream.Position;
-                d_fld_pos.Add(lst, p);
-                writeField(sfld);
-            }
-            #endregion
-            _h.Infos[GHeaderSTR.FIELD_COUNT] = (uint)index;
-        }
         private void writeAllStructs() {
             int index = 0;
             _h.Infos[GHeaderSTR.STRUCT_OFFSET] = (uint)_bw.BaseStream.Position;
-            #region A améliorer... mais fonctionnel.
             foreach (GStruct str in l_str) {
-                GStructSTR sstr = new GStructSTR();
-                sstr.FieldCount = BitConverter.ToUInt32(BitConverter.GetBytes(str.get().Count), 0);
-                int type = (str.Owner == null) ? (-1) : (1);
-                sstr.Type = BitConverter.ToUInt32(BitConverter.GetBytes(type), 0);
-                sstr.DataOrOffset = BitConverter.ToUInt32(BitConverter.GetBytes(0), 0);
-                Position p = new Position();
-                p.index = index++;
-                p.offset = _bw.BaseStream.Position;
-                d_str_pos.Add(str, p);
-                writeStruct(sstr);
+                long offset = _bw.BaseStream.Position;
+                if (writeStruct(str)) {
+                    d_str_pos.Add(str, new Position(index, offset));
+                    index++;
+                }
             }
-            #endregion
             _h.Infos[GHeaderSTR.STRUCT_COUNT] = (uint)index;
         }
+        private void writeAllFields() {
+            int index = 0;
+            _h.Infos[GHeaderSTR.FIELD_OFFSET] = (uint)_bw.BaseStream.Position;
+            foreach (GField fld in l_fld) {
+                long offset = _bw.BaseStream.Position;
+                if (writeField(fld)) {
+                    d_fld_pos.Add(fld, new Position(index, offset));
+                    index++;
+                }
+            }
+            _h.Infos[GHeaderSTR.FIELD_COUNT] = (uint)index;
+        }
+
         private void writeLabels() {
             int index = 0;
             _h.Infos[GHeaderSTR.LABEL_OFFSET] = (uint)_bw.BaseStream.Position;
@@ -522,99 +303,205 @@ namespace FFR2Explorer.gff_specific {
                 GField fld = kvp.Key;
                 long offset = kvp.Value.offset;
                 int index = kvp.Value.index;
+                long pos = _bw.BaseStream.Position;
+                _bw.BaseStream.Position = offset + 2 * sizeof(UInt32);
                 if (fld is GStruct) {
                     GStruct str = (GStruct)fld;
-                    // On le lie avec son index dans la liste des structures.
                     int s_index = d_str_pos[str].index;
-                    long pos = _bw.BaseStream.Position;
-                    _bw.BaseStream.Position = offset + 2 * sizeof(UInt32);
                     _bw.Write((uint)s_index);
-                    _bw.BaseStream.Position = pos;
                 } else if (fld is GList) {
                     GList lst = (GList)fld;
                     uint l_pos = (uint)d_lst_lstidx[lst] - _h.Infos[GHeaderSTR.LIST_INDICES_OFFSET];
-                    long pos = _bw.BaseStream.Position;
-                    _bw.BaseStream.Position = offset + 2 * sizeof(UInt32);
-                    _bw.Write(l_pos);
-                    _bw.BaseStream.Position = pos;
+                    _bw.Write((uint)l_pos);
                 } else {
                     if (d_fld_flddat.ContainsKey(fld)) {
                         uint fd_pos = (uint)d_fld_flddat[fld].offset - _h.Infos[GHeaderSTR.FIELD_DATA_OFFSET];
-                        long pos = _bw.BaseStream.Position;
-                        _bw.BaseStream.Position = offset + 2 * sizeof(UInt32);
-                        _bw.Write(fd_pos);
-                        _bw.BaseStream.Position = pos;
+                        _bw.Write((uint)fd_pos);
                     }
                 }
+                _bw.BaseStream.Position = pos;
             }
         }
 
-        private void writeField(GFieldSTR sfld) {
-            // Ne pas changer d'ordre !
-            _bw.Write(sfld.Type);
-            _bw.Write(sfld.LabelIndex);
-            _bw.Write(sfld.DataOrOffset);
+        private GFieldSTR createFieldSTR(GField fld) {
+            // On crée la structure à renvoyer.
+            GFieldSTR result = new GFieldSTR();
+            // On crée les variables qui vont accueuillir les données de la structure.
+            byte[] dataOrOffset = new byte[sizeof(uint)];
+            int labelIndex = l_label.IndexOf(fld.Label);
+            GType type = getType(fld);
+            // On détermine l'algorithme en fonction du typage du champ.
+            if (fld is GCompositeField) {
+                if (fld is GStruct) {
+                    // ATTENTION ! Ce code ne devrait JAMAIS ÊTRE ATTEINT si la structure RACINE, ou ENFANT D'UNE LISTE !
+                    // Dans le cas contraire, on défini la valeur de DataOrOffset comme étant l'index de la structure
+                    // dans la liste des structures.
+                    GStruct str = (GStruct)fld;
+                    dataOrOffset = BitConverter.GetBytes((uint)l_str.IndexOf(str));
+                    labelIndex = (labelIndex == -1) ? (0) : (labelIndex);
+                } else {
+                    // Dans le cas d'une liste, on liera avec la liste d'indices de champ après.
+                    dataOrOffset = BitConverter.GetBytes((uint)0);
+                }
+            } else {
+                if (isComplex(result.Type)) {
+                    // On liera avec ses données plus tard.
+                    dataOrOffset = BitConverter.GetBytes((uint)0);
+                } else {
+                    // On stocke directement les données.
+                    #region Switch de conversion de la valeur.
+                    switch (type) {
+                        case GType.BYTE:
+                            dataOrOffset = BitConverter.GetBytes(((GByte)fld).Value);
+                            break;
+                        case GType.CHAR:
+                            dataOrOffset = BitConverter.GetBytes(((GChar)fld).Value);
+                            break;
+                        case GType.WORD:
+                            dataOrOffset = BitConverter.GetBytes(((GWord)fld).Value);
+                            break;
+                        case GType.SHORT:
+                            dataOrOffset = BitConverter.GetBytes(((GShort)fld).Value);
+                            break;
+                        case GType.DWORD:
+                            dataOrOffset = BitConverter.GetBytes(((GDword)fld).Value);
+                            break;
+                        case GType.INT:
+                            dataOrOffset = BitConverter.GetBytes(((GInt)fld).Value);
+                            break;
+                        case GType.FLOAT:
+                            dataOrOffset = BitConverter.GetBytes(((GFloat)fld).Value);
+                            break;
+                    }
+                    #endregion
+                }
+            }
+
+            // On vérifie que la taille du tableau de bytes est bien de taille 'sizeof(uint)'
+            if (dataOrOffset.Length < sizeof(uint)) {
+                Array.Resize<byte>(ref dataOrOffset, sizeof(uint));
+            } else if (dataOrOffset.Length > sizeof(uint)) {
+                // Erreur ! Tableau trop grand !
+            }
+            // On stocke les données dans la structure.
+            result.Type = type;
+            result.LabelIndex = (uint)labelIndex;
+            result.DataOrOffset = BitConverter.ToUInt32(dataOrOffset, 0);
+            // On renvoie la structure.
+            return result;
         }
-        private void writeStruct(GStructSTR sstr) {
+        private void writeFieldSTR(GFieldSTR sfld) {
             // Ne pas changer d'ordre !
-            _bw.Write(sstr.Type);
-            _bw.Write(sstr.DataOrOffset);
-            _bw.Write(sstr.FieldCount);
+            _bw.Write((uint)sfld.Type);
+            _bw.Write((uint)sfld.LabelIndex);
+            _bw.Write((uint)sfld.DataOrOffset);
+        }
+        private bool writeField(GField fld) {
+            // Dans le cas spécial d'une structure, on n'écrit un champ associé uniquement
+            // si la structure est possédée par une autre structure et n'est pas racine.
+            if (!(fld is GStruct) || (fld is GStruct && (fld.Owner != null && fld.Owner is GStruct))) {
+                writeFieldSTR(createFieldSTR(fld));
+                return true;
+            }
+            return false;
+        }
+
+        private GStructSTR createStructSTR(GStruct str) {
+            GStructSTR sstr = new GStructSTR();
+            sstr.FieldCount = (uint)str.get().Count;
+            sstr.Type = (str.IsRoot) ? (GStructSTR.ROOT_TYPE) : (GStructSTR.STANDARD_TYPE);
+            sstr.DataOrOffset = 0;
+            return sstr;
+        }
+        private void writeStructSTR(GStructSTR sstr) {
+            // Ne pas changer d'ordre !
+            _bw.Write((uint)sstr.Type);
+            _bw.Write((uint)sstr.DataOrOffset);
+            _bw.Write((uint)sstr.FieldCount);
+        }
+        private bool writeStruct(GStruct str) {
+            writeStructSTR(createStructSTR(str));
+            return true;
+        }
+
+        public static GType getType(GField fld) {
+            if (fld is GByte) {
+                return GType.BYTE;
+            } else if (fld is GChar) {
+                return GType.CHAR;
+            } else if (fld is GWord) {
+                return GType.WORD;
+            } else if (fld is GShort) {
+                return GType.SHORT;
+            } else if (fld is GDword) {
+                return GType.DWORD;
+            } else if (fld is GInt) {
+                return GType.INT;
+            } else if (fld is GFloat) {
+                return GType.FLOAT;
+            } else if (fld is GDword64) {
+                return GType.DWORD64;
+            } else if (fld is GInt64) {
+                return GType.INT64;
+            } else if (fld is GDouble) {
+                return GType.DOUBLE;
+            } else if (fld is GCExoString) {
+                return GType.CEXOSTRING;
+            } else if (fld is GResRef) {
+                return GType.RESREF;
+            } else if (fld is GCExoLocString) {
+                return GType.CEXOLOCSTRING;
+            } else if (fld is GVoid) {
+                return GType.VOID;
+            } else if (fld is GStruct) {
+                return GType.STRUCT;
+            } else if (fld is GList) {
+                return GType.LIST;
+            } else {
+                return GType.INVALID;
+            }
+        }
+        public static bool isComplex(GType type) {
+            switch (type) {
+                case GType.BYTE:
+                case GType.CHAR:
+                case GType.WORD:
+                case GType.SHORT:
+                case GType.DWORD:
+                case GType.INT:
+                case GType.FLOAT:
+                    return false;
+                default:
+                    return true;
+            }
+        }
+        public static bool isComposite(GField fld) {
+            return (fld is GCompositeField);
         }
 
         private void analyseField(GField fld) {
-            if (fld is GByte) {
-                l_simple_fld.Add(fld);
-            } else if (fld is GChar) {
-                l_simple_fld.Add(fld);
-            } else if (fld is GWord) {
-                l_simple_fld.Add(fld);
-            } else if (fld is GShort) {
-                l_simple_fld.Add(fld);
-            } else if (fld is GDword) {
-                l_simple_fld.Add(fld);
-            } else if (fld is GInt) {
-                l_simple_fld.Add(fld);
-            } else if (fld is GDword64) {
+            l_fld.Add(fld);
+            if (isComplex(getType(fld))) {
                 l_complex_fld.Add(fld);
-                l_dword64.Add((GDword64)fld);
-            } else if (fld is GInt64) {
-                l_complex_fld.Add(fld);
-                l_int64.Add((GInt64)fld);
-            } else if (fld is GFloat) {
-                l_simple_fld.Add(fld);
-            } else if (fld is GDouble) {
-                l_complex_fld.Add(fld);
-                l_double.Add((GDouble)fld);
-            } else if (fld is GCExoString) {
-                l_complex_fld.Add(fld);
-                l_exostr.Add((GCExoString)fld);
-            } else if (fld is GResRef) {
-                l_complex_fld.Add(fld);
-                l_resref.Add((GResRef)fld);
-            } else if (fld is GCExoLocString) {
-                l_complex_fld.Add(fld);
-                l_exolocstr.Add((GCExoLocString)fld);
-            } else if (fld is GVoid) {
-                l_complex_fld.Add(fld);
-                l_void.Add((GVoid)fld);
-            } else if (fld is GStruct) {
-                l_cpsit_fld.Add(fld);
-                l_str.Add((GStruct)fld);
-            } else if (fld is GList) {
-                l_cpsit_fld.Add(fld);
-                l_lst.Add((GList)fld);
-            }
-            if (!(fld is GStruct)) {
-                if (!l_label.Contains(fld.Label)) {
-                    l_label.Add(fld.Label);
+                if (isComposite(fld)) {
+                    GCompositeField cpsit = (GCompositeField)fld;
+                    l_cpsit_fld.Add(fld);
+                    if (cpsit is GStruct) {
+                        l_str.Add((GStruct)cpsit);
+                    } else {
+                        l_lst.Add((GList)cpsit);
+                    }
+                    foreach (GField child in cpsit.get()) {
+                        analyseField(child);
+                    }
+                } else {
+                    l_large_fld.Add(fld);
                 }
+            } else {
+                l_simple_fld.Add(fld);
             }
-            if (fld is GCompositeField) {
-                GCompositeField cpsit = (GCompositeField)fld;
-                foreach (GField child in cpsit.get()) {
-                    analyseField(child);
-                }
+            if (!l_label.Contains(fld.Label)) {
+                l_label.Add(fld.Label);
             }
         }
     }

@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="datas_structure\CompositeFields.cs" />
-    <Compile Include="gff_specific\GDatas.cs" />
+    <Compile Include="gff_specific\GStaticDatas.cs" />
     <Compile Include="gff_specific\GFile.cs" />
     <Compile Include="gff_specific\GBinaryReader.cs" />
     <Compile Include="gff_specific\GFileReader.cs" />

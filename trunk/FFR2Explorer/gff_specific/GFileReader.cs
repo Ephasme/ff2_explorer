@@ -50,7 +50,7 @@ namespace FFR2Explorer.gff_specific {
         }
         
         public GStruct getRootStruct() {
-            return l_str[GConst.ROOT_STRUCTURE_INDEX];
+            return l_str[GConst.ROOT_STRUCT_INDEX];
         }
 
         #region Méthodes privées.
@@ -91,7 +91,7 @@ namespace FFR2Explorer.gff_specific {
             for (int i = 0; i < _h.FieldCount; i++) {
                 Queue<DWORD> q = _rd.EnqueueDWORDs(GConst.STRUCT_VALUE_COUNT);
                 GFieldSTR fstr = new GFieldSTR();
-                fstr.Type = q.Dequeue();
+                fstr.Type = (GType)q.Dequeue();
                 fstr.LabelIndex = q.Dequeue();
                 fstr.DataOrOffset = q.Dequeue();
                 l_fstr.Add(fstr);
@@ -130,7 +130,7 @@ namespace FFR2Explorer.gff_specific {
             /* Pour chaque structure préalablement lue dans le fichier, on effectue une boucle. */
             foreach (GFieldSTR fstr in l_fstr) {
                 GField fld; // On crée une instance nulle qui recevra les données du fichier.
-                if (fstr.Type == GConst.STRUCT) {
+                if (fstr.Type == GType.STRUCT) {
                     /* Si le type trouvé dans les données lues est "structure". */
                     GStruct str = l_str[(int)fstr.DataOrOffset]; // On récupère la structure car elle a déjà été modélisée.
                     str.setLabel(_ff.getLabel(fstr)); // On défini son label en fonction des données trouvées dans le fichier.
@@ -140,7 +140,7 @@ namespace FFR2Explorer.gff_specific {
                     fld = _ff.createField(fstr); // On fait générer un objet correspondant au type trouvé dans le fichier.
                 }
                 l_fld.Add(fld); // On ajoute cet objet à la liste.
-                if (fstr.Type == GConst.LIST) {
+                if (fstr.Type == GType.LIST) {
                     /* Si le type trouvé dans les données lues est "liste". */
                     List<uint> idxs = getStructIndexes(fstr); // On fait la liste de tous les champs qu'elle contient.
                     dic_lst.Add((GList)fld, idxs); // On l'ajoute dans un dictionnaire avec cette liste.
@@ -185,7 +185,7 @@ namespace FFR2Explorer.gff_specific {
             return l_fld_i;
         }
         public List<uint> getStructIndexes(GFieldSTR s_list) {
-            if (s_list.Type == GConst.LIST) {
+            if (s_list.Type == GType.LIST) {
                 _rd.Stream.Position = _h.ListIndicesOffset + s_list.DataOrOffset;
                 int size = (int)_rd.ReadDWORD();
                 List<uint> l_idx = new List<uint>(size);

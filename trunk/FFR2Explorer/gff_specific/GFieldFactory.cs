@@ -24,7 +24,7 @@ namespace FFR2Explorer {
             _s.Position = _h.FieldOffset + index * GConst.STRUCT_SIZE;
             Queue<DWORD> q = _rd.EnqueueDWORDs(GConst.STRUCT_VALUE_COUNT);
             GFieldSTR fldStr = new GFieldSTR();
-            fldStr.Type = q.Dequeue();
+            fldStr.Type = (GType)q.Dequeue();
             fldStr.LabelIndex = q.Dequeue();
             fldStr.DataOrOffset = q.Dequeue();
             return fldStr;
@@ -35,52 +35,52 @@ namespace FFR2Explorer {
             long savedPosition = _s.Position;
             _s.Position = getPositionByType(f_str);
             switch (f_str.Type) {
-                case GConst.BYTE:
+                case GType.BYTE:
                     res = createByte(f_str);
                     break;
-                case GConst.CHAR:
+                case GType.CHAR:
                     res = createChar(f_str);
                     break;
-                case GConst.WORD:
+                case GType.WORD:
                     res = createWord(f_str);
                     break;
-                case GConst.SHORT:
+                case GType.SHORT:
                     res = createShort(f_str);
                     break;
-                case GConst.DWORD:
+                case GType.DWORD:
                     res = createDword(f_str);
                     break;
-                case GConst.INT:
+                case GType.INT:
                     res = createInt(f_str);
                     break;
-                case GConst.DWORD64:
+                case GType.DWORD64:
                     res = createDword64(f_str);
                     break;
-                case GConst.INT64:
+                case GType.INT64:
                     res = createInt64(f_str);
                     break;
-                case GConst.FLOAT:
+                case GType.FLOAT:
                     res = createFloat(f_str);
                     break;
-                case GConst.DOUBLE:
+                case GType.DOUBLE:
                     res = createDouble(f_str);
                     break;
-                case GConst.CEXOSTRING:
+                case GType.CEXOSTRING:
                     res = createCExoString(f_str);
                     break;
-                case GConst.RESREF:
+                case GType.RESREF:
                     res = createResRef(f_str);
                     break;
-                case GConst.CEXOLOCSTRING:
+                case GType.CEXOLOCSTRING:
                     res = createCExoLocString(f_str);
                     break;
-                case GConst.VOID:
+                case GType.VOID:
                     res = createVoid(f_str);
                     break;
-                case GConst.STRUCT:
+                case GType.STRUCT:
                     res = createStruct();
                     break;
-                case GConst.LIST:
+                case GType.LIST:
                     res = createList(f_str);
                     break;
             }
@@ -91,20 +91,21 @@ namespace FFR2Explorer {
             GFieldSTR f_str = createFieldStructure(index);
             return createField(f_str);
         }
-
         private long getPositionByType(GFieldSTR f_str) {
-            switch (f_str.Type) {
-                case GConst.DWORD64:
-                case GConst.INT64:
-                case GConst.DOUBLE:
-                case GConst.CEXOSTRING:
-                case GConst.RESREF:
-                case GConst.CEXOLOCSTRING:
-                case GConst.VOID:
+            GType type = new GType();
+            type = (GType)f_str.Type;
+            switch (type) {
+                case GType.DWORD64:
+                case GType.INT64:
+                case GType.DOUBLE:
+                case GType.CEXOSTRING:
+                case GType.RESREF:
+                case GType.CEXOLOCSTRING:
+                case GType.VOID:
                     return _h.FieldDataOffset + f_str.DataOrOffset;
-                case GConst.STRUCT:
+                case GType.STRUCT:
                     return _h.StructOffset + f_str.DataOrOffset * GConst.STRUCT_SIZE;
-                case GConst.LIST:
+                case GType.LIST:
                     return _h.ListIndicesOffset + f_str.DataOrOffset;
                 default:
                     return _s.Position;
