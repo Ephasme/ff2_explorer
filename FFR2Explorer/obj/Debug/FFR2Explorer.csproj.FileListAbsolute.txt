@@ -1,8 +1,0 @@
-D:\Programmation\workspace\FFR2.2\FFR2Explorer\bin\Debug\FFR2Explorer.exe
-D:\Programmation\workspace\FFR2.2\FFR2Explorer\bin\Debug\FFR2Explorer.pdb
-D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\ResolveAssemblyReference.cache
-D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\FFR2Explorer.FFR2MainForm.resources
-D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\FFR2Explorer.Properties.Resources.resources
-D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\FFR2Explorer.csproj.GenerateResource.Cache
-D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\FFR2Explorer.exe
-D:\Programmation\workspace\FFR2.2\FFR2Explorer\obj\Debug\FFR2Explorer.pdb
