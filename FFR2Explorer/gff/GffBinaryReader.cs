@@ -7,7 +7,7 @@ using System.IO;
 using DWORD = System.UInt32;
 
 namespace Bioware.GFF {
-    public class GBinaryReader : BinaryReader {
+    public class GffBinaryReader : BinaryReader {
 
         /// <summary>
         /// Accès au stream associé à ce lecteur.
@@ -18,7 +18,7 @@ namespace Bioware.GFF {
         /// Lecteur de données binaires spécifique aux fichiers GFF.
         /// </summary>
         /// <param name="stream">Stream d'un fichier GFF.</param>
-        public GBinaryReader(FileStream stream)
+        public GffBinaryReader(FileStream stream)
             : base(stream) {
             Stream = stream;
         }

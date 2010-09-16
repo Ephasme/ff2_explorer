@@ -11,7 +11,7 @@ namespace Bioware.GFF {
     /// <summary>
     /// Classe permettant de gérer l'en-tête.
     /// </summary>
-    public class GHeader {
+    public class GffHeader {
         /// <summary>
         /// Structure contenant les données de l'en-tête.
         /// </summary>
@@ -36,12 +36,12 @@ namespace Bioware.GFF {
         public const int SIZE = DWORD_TABLE_SIZE * sizeof(DWORD) + (FILE_TYPE_SIZE + FILE_VERSION_SIZE);
         #endregion
         #region Variables contenant les données de l'en-tête.
-        public UInt32[] Infos { private set; get; }
+        public DWORD[] Infos { private set; get; }
         public char[] Type { private set; get; }
         public char[] Version { private set; get; }
         #endregion
 
-        public GHeader(GBinaryReader reader){
+        public GffHeader(GffBinaryReader reader){
             init(reader);
             load(reader);
         }
@@ -49,7 +49,7 @@ namespace Bioware.GFF {
         /// <summary>
         /// Initialise les structures de données.
         /// </summary>
-        private void init(GBinaryReader reader) {
+        private void init(GffBinaryReader reader) {
             Infos = new DWORD[DWORD_TABLE_SIZE];
             Type = new char[FILE_TYPE_SIZE];
             Version = new char[FILE_VERSION_SIZE];
@@ -57,7 +57,7 @@ namespace Bioware.GFF {
         /// <summary>
         /// Chargement en mémoire des informations de l'en-tête du fichier.
         /// </summary>
-        protected void load(GBinaryReader reader) {
+        protected void load(GffBinaryReader reader) {
             long pos = reader.BaseStream.Position;
             reader.BaseStream.Position = 0;
             Type = reader.ReadChars(FILE_TYPE_SIZE);

@@ -4,34 +4,29 @@ using System.Linq;
 using System.Text;
 
 using DWORD = System.UInt32;
+using Bioware.Virtual;
 
 namespace Bioware {
-    public struct GConst {
+    public struct GffConst {
         public const int STRUCT_VALUE_COUNT = 3;
         public const int STRUCT_SIZE = STRUCT_VALUE_COUNT * sizeof(DWORD);
         public const int LABEL_LENGTH = 16;
-        public const int RESREF_MAX_LENGTH = 16;
         public const int ROOT_STRUCT_INDEX = 0;
     }
-    public enum VType : uint {
-        BYTE, CHAR, WORD, SHORT, DWORD, INT, DWORD64, INT64,
-        FLOAT, DOUBLE, CEXOSTRING, RESREF, CEXOLOCSTRING,
-        VOID, STRUCT, LIST, INVALID = 4294967295
-    }
-    public struct GFieldSTR {
+    public struct GffFieldStr {
         public VType Type;
         public DWORD DataOrOffset;
         public DWORD LabelIndex;
     }
-    public struct GStructSTR {
-        public const uint ROOT_TYPE = 4294967295; // 0xFFFFFFFF (-1)
-        public const uint STANDARD_TYPE = 1;
+    public struct GffStructStr {
+        public const DWORD ROOT_TYPE = 4294967295; // 0xFFFFFFFF (-1)
+        public const DWORD STANDARD_TYPE = 1;
         public const string DEFAULT_LABEL = "struct";
         public DWORD Type;
         public DWORD FieldCount;
         public DWORD DataOrOffset;
     }
-    struct GHeaderSTR {
+    struct GffHeaderStr {
         #region Constantes du tableau des données de l'en-tête.
         public const int STRUCT_OFFSET = 0;
         public const int STRUCT_COUNT = 1;
@@ -54,12 +49,12 @@ namespace Bioware {
         public const int SIZE = DWORD_TABLE_SIZE * sizeof(DWORD) + (FILE_TYPE_SIZE + FILE_VERSION_SIZE);
         #endregion
         #region Variables contenant les données de l'en-tête.
-        public UInt32[] Infos;
+        public DWORD[] Infos;
         public char[] Type;
         public char[] Version;
         #endregion
-        public GHeaderSTR init() {
-            Infos = new UInt32[DWORD_TABLE_SIZE];
+        public GffHeaderStr init() {
+            Infos = new DWORD[DWORD_TABLE_SIZE];
             Type = new char[FILE_TYPE_SIZE];
             Version = new char[FILE_VERSION_SIZE];
             return this;

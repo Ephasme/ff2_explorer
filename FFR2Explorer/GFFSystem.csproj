@@ -67,14 +67,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="virtual\IFileReader.cs" />
+    <Compile Include="virtual\VType.cs" />
     <Compile Include="virtual\VCompositeFields.cs" />
-    <Compile Include="gff\GStaticDatas.cs" />
-    <Compile Include="gff\GBinaryReader.cs" />
-    <Compile Include="gff\GFileReader.cs" />
-    <Compile Include="gff\GFileSaver.cs" />
-    <Compile Include="gff\GHeader.cs" />
+    <Compile Include="gff\GffFileConstants.cs" />
+    <Compile Include="gff\GffBinaryReader.cs" />
+    <Compile Include="gff\GffFileReader.cs" />
+    <Compile Include="gff\GffFileSaver.cs" />
+    <Compile Include="gff\GffHeader.cs" />
     <Compile Include="virtual\VField.cs" />
-    <Compile Include="gff\GFieldFactory.cs" />
+    <Compile Include="gff\GffFieldFactory.cs" />
     <Compile Include="virtual\VLargeFields.cs" />
     <Compile Include="virtual\VSimpleFields.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -98,8 +100,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="xml\XMLFileReader.cs" />
-    <Compile Include="xml\XMLFileSaver.cs" />
+    <Compile Include="xml\XmlFileConstants.cs" />
+    <Compile Include="xml\XmlFileReader.cs" />
+    <Compile Include="xml\XmlFileSaver.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">

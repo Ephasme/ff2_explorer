@@ -6,9 +6,11 @@ using System.IO;
 using System.Collections;
 using Bioware.Virtual;
 
+using DWORD = System.UInt32;
+
 namespace Bioware.GFF {
-    public class GFileSaver {
-        GHeaderSTR _h;
+    public class GffFileSaver {
+        GffHeaderStr _h;
 
         #region Stream et writer.
         FileStream _fs;
@@ -32,18 +34,22 @@ namespace Bioware.GFF {
             }
         }
 
-        #region Dictionnaires de positionnement.
-        Dictionary<VStruct, Position> d_str_pos;
-        Dictionary<VStruct, long> d_str_fldind;
-        Dictionary<VList, long> d_lst_lstidx;
-        Dictionary<VField, Position> d_fld_pos;
-        Dictionary<VField, Position> d_fld_flddat;
-        Dictionary<string, Position> d_lab_pos;
-        #endregion
+        Dictionary<VStruct, long> dp_str;
+        Dictionary<VField, long> dp_fld;
+        Dictionary<string, Position> dp_lab;
+
+
+        Dictionary<VField, Position> dl_FldToFDatas;
+        Dictionary<VStruct, long> dl_StrToFIdc;
+        Dictionary<VList, long> dl_LstTLInd;
+        
+        /*#region Dictionnaires de positionnement.
+                //Dictionary<VField, int> dp_fld_str_id;
+                #endregion*/
 
         #region Listes des structures.
-        List<GStructSTR> l_sstr;
-        List<GFieldSTR> l_fstr;
+        List<GffStructStr> l_sstr;
+        List<GffFieldStr> l_fstr;
         #endregion
 
         #region Listes par type de champ.
@@ -71,32 +77,32 @@ namespace Bioware.GFF {
         private List<VField> l_fld;
         private List<string> l_label;
 
-        public GFileSaver(VStruct root, string path, string ext) {
+        public GffFileSaver(VStruct root, string path, string ext) {
             initVars(root, path, ext);
         }
         private void initVars(VStruct root, string path, string ext) {
             this.root = root;
             this.path = path;
             this.ext = ext;
-            this.ver = GHeaderSTR.VERSION;
+            this.ver = GffHeaderStr.VERSION;
             _ascii = new ASCIIEncoding();
-            _h = (new GHeaderSTR()).init();
+            _h = (new GffHeaderStr()).init();
             if (File.Exists(path)) {
                 _fs = File.Open(path, FileMode.Truncate);
             } else {
                 _fs = File.Open(path, FileMode.CreateNew);
             }
             _bw = new BinaryWriter(_fs);
+            dp_str = new Dictionary<VStruct, long>();
+            dp_fld = new Dictionary<VField, long>();
+            dp_lab = new Dictionary<string, Position>();
 
-            d_str_pos = new Dictionary<VStruct, Position>();
-            d_str_fldind = new Dictionary<VStruct, long>();
-            d_lst_lstidx = new Dictionary<VList, long>();
-            d_fld_pos = new Dictionary<VField, Position>();
-            d_fld_flddat = new Dictionary<VField, Position>();
-            d_lab_pos = new Dictionary<string, Position>();
+            dl_FldToFDatas = new Dictionary<VField, Position>();
+            dl_StrToFIdc = new Dictionary<VStruct, long>();
+            dl_LstTLInd = new Dictionary<VList, long>();
 
-            l_fstr = new List<GFieldSTR>();
-            l_sstr = new List<GStructSTR>();
+            l_fstr = new List<GffFieldStr>();
+            l_sstr = new List<GffStructStr>();
 
             l_simple_fld = new List<VField>();
             l_complex_fld = new List<VField>();
@@ -120,7 +126,7 @@ namespace Bioware.GFF {
 
         public void save() {
             // On laisse la place pour les infos d'en-tête.
-            _bw.Seek(GHeaderSTR.SIZE, SeekOrigin.Begin);
+            _bw.Seek(GffHeaderStr.SIZE, SeekOrigin.Begin);
             // On décortique la structure racine.
             analyseField(root);
             // On écrit le fichier.
@@ -138,49 +144,49 @@ namespace Bioware.GFF {
         }
 
         private void writeAllStructs() {
-            int index = 0;
-            _h.Infos[GHeaderSTR.STRUCT_OFFSET] = (uint)_bw.BaseStream.Position;
+            _h.Infos[GffHeaderStr.STRUCT_OFFSET] = (DWORD)_bw.BaseStream.Position;
+            int count = 0;
             foreach (VStruct str in l_str) {
+                _bw.Seek(((int)_h.Infos[GffHeaderStr.STRUCT_OFFSET]) + str.Index * GffConst.STRUCT_SIZE, SeekOrigin.Begin);
                 long offset = _bw.BaseStream.Position;
                 if (writeStruct(str)) {
-                    d_str_pos.Add(str, new Position(index, offset));
-                    index++;
+                    dp_str.Add(str, offset);
+                    count++;
                 }
             }
-            _h.Infos[GHeaderSTR.STRUCT_COUNT] = (uint)index;
+            _h.Infos[GffHeaderStr.STRUCT_COUNT] = (DWORD)count;
         }
         private void writeAllFields() {
-            int index = 0;
-            _h.Infos[GHeaderSTR.FIELD_OFFSET] = (uint)_bw.BaseStream.Position;
+            _h.Infos[GffHeaderStr.FIELD_OFFSET] = (DWORD)_bw.BaseStream.Position;
+            int count = 0;
             foreach (VField fld in l_fld) {
+                _bw.Seek(((int)_h.Infos[GffHeaderStr.FIELD_OFFSET]) + fld.Index * GffConst.STRUCT_SIZE, SeekOrigin.Begin);
                 long offset = _bw.BaseStream.Position;
                 if (writeField(fld)) {
-                    d_fld_pos.Add(fld, new Position(index, offset));
-                    index++;
-                } else {
-                    d_fld_pos.Add(fld, new Position(0, offset));
+                    dp_fld.Add(fld, offset);
+                    count++;
                 }
             }
-            _h.Infos[GHeaderSTR.FIELD_COUNT] = (uint)index;
+            _h.Infos[GffHeaderStr.FIELD_COUNT] = (DWORD)count;
         }
 
         private void writeLabels() {
             int index = 0;
-            _h.Infos[GHeaderSTR.LABEL_OFFSET] = (uint)_bw.BaseStream.Position;
+            _h.Infos[GffHeaderStr.LABEL_OFFSET] = (DWORD)_bw.BaseStream.Position;
             foreach (string label in l_label) {
                 long label_offset = _bw.BaseStream.Position;
-                string normalized_label = label.PadRight(GConst.LABEL_LENGTH, '\0');
-                d_lab_pos.Add(normalized_label, new Position(index, label_offset));
+                string normalized_label = label.PadRight(GffConst.LABEL_LENGTH, '\0');
+                dp_lab.Add(normalized_label, new Position(index, label_offset));
                 _bw.Write(normalized_label.ToCharArray());
                 index++;
             }
-            _h.Infos[GHeaderSTR.LABEL_COUNT] = (uint)index;
+            _h.Infos[GffHeaderStr.LABEL_COUNT] = (DWORD)index;
         }
         private void writeFieldDatas() {
             int index = 0;
-            _h.Infos[GHeaderSTR.FIELD_DATA_OFFSET] = (uint)_bw.BaseStream.Position;
+            _h.Infos[GffHeaderStr.FIELD_DATA_OFFSET] = (DWORD)_bw.BaseStream.Position;
             foreach (VField lfld in l_large_fld) {
-                d_fld_flddat.Add(lfld, new Position(index++, _bw.BaseStream.Position));
+                dl_FldToFDatas.Add(lfld, new Position(index++, _bw.BaseStream.Position));
                 switch (lfld.Type) {
                     case VType.DWORD64:
                         _bw.Write(((VDword64)lfld).Value);
@@ -193,7 +199,7 @@ namespace Bioware.GFF {
                         break;
                     case VType.CEXOSTRING:
                         string str = ((VExoString)lfld).Value;
-                        _bw.Write((uint)_ascii.GetByteCount(str));
+                        _bw.Write((DWORD)_ascii.GetByteCount(str));
                         _bw.Write(_ascii.GetBytes(str));
                         break;
                     case VType.RESREF:
@@ -209,119 +215,113 @@ namespace Bioware.GFF {
                         break;
                 }
             }
-            _h.Infos[GHeaderSTR.FIELD_DATA_COUNT] = ((uint)_bw.BaseStream.Position) - _h.Infos[GHeaderSTR.FIELD_DATA_OFFSET];
+            _h.Infos[GffHeaderStr.FIELD_DATA_COUNT] = ((DWORD)_bw.BaseStream.Position) - _h.Infos[GffHeaderStr.FIELD_DATA_OFFSET];
         }
         private void writeCExoLocString(VExoLocString exlstr) {
             List<byte> buffer = new List<byte>();
             foreach (KeyValuePair<int, string> kvp in exlstr.Value) {
-                buffer.AddRange(BitConverter.GetBytes((uint)kvp.Key));
-                buffer.AddRange(BitConverter.GetBytes((uint)kvp.Value.Length));
+                buffer.AddRange(BitConverter.GetBytes((DWORD)kvp.Key));
+                buffer.AddRange(BitConverter.GetBytes((DWORD)kvp.Value.Length));
                 buffer.AddRange(_ascii.GetBytes(kvp.Value));
             }
-            _bw.Write(buffer.Count + sizeof(uint) * 2);
-            _bw.Write((uint)exlstr.StringRef);
-            _bw.Write((uint)exlstr.Value.Count);
+            _bw.Write(buffer.Count + sizeof(DWORD) * 2);
+            _bw.Write((DWORD)exlstr.StringRef);
+            _bw.Write((DWORD)exlstr.Value.Count);
             _bw.Write(buffer.ToArray());
         }
         private void writeFieldIndices() {
-            _h.Infos[GHeaderSTR.FIELD_INDICES_OFFSET] = (uint)_bw.BaseStream.Position;
+            _h.Infos[GffHeaderStr.FIELD_INDICES_OFFSET] = (DWORD)_bw.BaseStream.Position;
             foreach (VStruct str in l_str) {
                 if (str.get().Count > 1) {
-                    d_str_fldind.Add(str, _bw.BaseStream.Position);
+                    dl_StrToFIdc.Add(str, _bw.BaseStream.Position);
                     foreach (VField fld in str.get()) {
-                        Position p = d_fld_pos[fld];
-                        _bw.Write(p.index);
+                        _bw.Write(fld.Index);
                     }
                 }
             }
-            _h.Infos[GHeaderSTR.FIELD_INDICES_COUNT] = ((uint)_bw.BaseStream.Position) - _h.Infos[GHeaderSTR.FIELD_INDICES_OFFSET];
+            _h.Infos[GffHeaderStr.FIELD_INDICES_COUNT] = ((DWORD)_bw.BaseStream.Position) - _h.Infos[GffHeaderStr.FIELD_INDICES_OFFSET];
         }
         private void writeListIndices() {
-            _h.Infos[GHeaderSTR.LIST_INDICES_OFFSET] = (uint)_bw.BaseStream.Position;
+            _h.Infos[GffHeaderStr.LIST_INDICES_OFFSET] = (DWORD)_bw.BaseStream.Position;
             foreach (VList lst in l_lst) {
-                d_lst_lstidx.Add(lst, _bw.BaseStream.Position);
+                dl_LstTLInd.Add(lst, _bw.BaseStream.Position);
                 _bw.Write(lst.get().Count);
                 foreach (VField fld in lst.get()) {
                     VStruct str = (VStruct)fld;
-                    Position p = d_str_pos[str];
-                    _bw.Write(p.index);
+                    _bw.Write(str.Index);
                 }
             }
-            _h.Infos[GHeaderSTR.LIST_INDICES_COUNT] = ((uint)_bw.BaseStream.Position) - _h.Infos[GHeaderSTR.LIST_INDICES_OFFSET];
+            _h.Infos[GffHeaderStr.LIST_INDICES_COUNT] = ((DWORD)_bw.BaseStream.Position) - _h.Infos[GffHeaderStr.LIST_INDICES_OFFSET];
         }
         private void writeHeader() {
             long pos = _bw.BaseStream.Position;
             _bw.BaseStream.Position = 0;
             ext = ext.ToUpper();
             ext = ext.Remove(0, 1);
-            ext = ext.PadRight(GHeader.FILE_TYPE_SIZE);
+            ext = ext.PadRight(GffHeader.FILE_TYPE_SIZE);
             _bw.Write(ext.ToCharArray());
             _bw.Write(ver.ToCharArray());
-            _bw.Write(_h.Infos[GHeader.STRUCT_OFFSET]);
-            _bw.Write(_h.Infos[GHeader.STRUCT_COUNT]);
-            _bw.Write(_h.Infos[GHeader.FIELD_OFFSET]);
-            _bw.Write(_h.Infos[GHeader.FIELD_COUNT]);
-            _bw.Write(_h.Infos[GHeader.LABEL_OFFSET]);
-            _bw.Write(_h.Infos[GHeader.LABEL_COUNT]);
-            _bw.Write(_h.Infos[GHeader.FIELD_DATA_OFFSET]);
-            _bw.Write(_h.Infos[GHeader.FIELD_DATA_COUNT]);
-            _bw.Write(_h.Infos[GHeader.FIELD_INDICES_OFFSET]);
-            _bw.Write(_h.Infos[GHeader.FIELD_INDICES_COUNT]);
-            _bw.Write(_h.Infos[GHeader.LIST_INDICES_OFFSET]);
-            _bw.Write(_h.Infos[GHeader.LIST_INDICES_COUNT]);
+            _bw.Write(_h.Infos[GffHeader.STRUCT_OFFSET]);
+            _bw.Write(_h.Infos[GffHeader.STRUCT_COUNT]);
+            _bw.Write(_h.Infos[GffHeader.FIELD_OFFSET]);
+            _bw.Write(_h.Infos[GffHeader.FIELD_COUNT]);
+            _bw.Write(_h.Infos[GffHeader.LABEL_OFFSET]);
+            _bw.Write(_h.Infos[GffHeader.LABEL_COUNT]);
+            _bw.Write(_h.Infos[GffHeader.FIELD_DATA_OFFSET]);
+            _bw.Write(_h.Infos[GffHeader.FIELD_DATA_COUNT]);
+            _bw.Write(_h.Infos[GffHeader.FIELD_INDICES_OFFSET]);
+            _bw.Write(_h.Infos[GffHeader.FIELD_INDICES_COUNT]);
+            _bw.Write(_h.Infos[GffHeader.LIST_INDICES_OFFSET]);
+            _bw.Write(_h.Infos[GffHeader.LIST_INDICES_COUNT]);
             _bw.BaseStream.Position = pos;
         }
 
         private void linkStructs() {
             // On relie toutes les structures.
-            foreach (KeyValuePair<VStruct, Position> kvp in d_str_pos) {
+            foreach (KeyValuePair<VStruct, long> kvp in dp_str) {
                 VStruct str = kvp.Key;
-                long str_offset = kvp.Value.offset;
-                int str_index = kvp.Value.index;
+                long str_offset = kvp.Value;
+                int str_index = kvp.Key.Index;
                 long saved_pos = _bw.BaseStream.Position;
-                _bw.BaseStream.Position = str_offset + sizeof(UInt32);
+                _bw.BaseStream.Position = str_offset + sizeof(DWORD);
                 if (str.get().Count > 1) {
-                    // On le relie à une liste de fields.
-                    long list_offset = d_str_fldind[str];
-                    _bw.Write((uint)list_offset - _h.Infos[GHeaderSTR.FIELD_INDICES_OFFSET]);
+                    _bw.Write((DWORD)dl_StrToFIdc[str] - _h.Infos[GffHeaderStr.FIELD_INDICES_OFFSET]);
                 } else {
-                    // On le relie à un index de field.
-                    int field_index = d_fld_pos[str].index;
-                    _bw.Write((uint)field_index);
+                    _bw.Write((DWORD)str.get()[0].Index);
                 }
                 _bw.BaseStream.Position = saved_pos;
             }
         }
         private void linkFields() {
-            foreach (KeyValuePair<VField, Position> kvp in d_fld_pos) {
+            foreach (KeyValuePair<VField, long> kvp in dp_fld) {
                 VField fld = kvp.Key;
-                long offset = kvp.Value.offset;
-                int index = kvp.Value.index;
+                long offset = kvp.Value;
+                int index = kvp.Key.Index;
                 long pos = _bw.BaseStream.Position;
-                _bw.BaseStream.Position = offset + 2 * sizeof(UInt32);
+                _bw.BaseStream.Position = offset + 2 * sizeof(DWORD);
                 if (fld is VStruct) {
                     VStruct str = (VStruct)fld;
-                    int s_index = d_str_pos[str].index;
-                    _bw.Write((uint)s_index);
+                    int s_index = str.Index;
+                    _bw.Write((DWORD)s_index);
                 } else if (fld is VList) {
                     VList lst = (VList)fld;
-                    uint l_pos = (uint)d_lst_lstidx[lst] - _h.Infos[GHeaderSTR.LIST_INDICES_OFFSET];
-                    _bw.Write((uint)l_pos);
+                    DWORD l_pos = (DWORD) dl_LstTLInd[lst] - _h.Infos[GffHeaderStr.LIST_INDICES_OFFSET];
+                    _bw.Write((DWORD)l_pos);
                 } else {
-                    if (d_fld_flddat.ContainsKey(fld)) {
-                        uint fd_pos = (uint)d_fld_flddat[fld].offset - _h.Infos[GHeaderSTR.FIELD_DATA_OFFSET];
-                        _bw.Write((uint)fd_pos);
+                    if (dl_FldToFDatas.ContainsKey(fld)) {
+                        DWORD fd_pos = (DWORD)dl_FldToFDatas[fld].offset - _h.Infos[GffHeaderStr.FIELD_DATA_OFFSET];
+                        _bw.Write((DWORD)fd_pos);
                     }
                 }
                 _bw.BaseStream.Position = pos;
             }
         }
 
-        private GFieldSTR createFieldSTR(VField fld) {
+        private GffFieldStr createFieldStr(VField fld) {
             // On crée la structure à renvoyer.
-            GFieldSTR result = new GFieldSTR();
+            GffFieldStr result = new GffFieldStr();
             // On crée les variables qui vont accueuillir les données de la structure.
-            byte[] dataOrOffset = new byte[sizeof(uint)];
+            byte[] dataOrOffset = new byte[sizeof(DWORD)];
             int labelIndex = l_label.IndexOf(fld.Label);
             VType type = fld.Type;
             // On détermine l'algorithme en fonction du typage du champ.
@@ -331,16 +331,16 @@ namespace Bioware.GFF {
                     // Dans le cas contraire, on défini la valeur de DataOrOffset comme étant l'index de la structure
                     // dans la liste des structures.
                     VStruct str = (VStruct)fld;
-                    dataOrOffset = BitConverter.GetBytes((uint)l_str.IndexOf(str));
+                    dataOrOffset = BitConverter.GetBytes((DWORD)l_str.IndexOf(str));
                     labelIndex = (labelIndex == -1) ? (0) : (labelIndex);
                 } else {
                     // Dans le cas d'une liste, on liera avec la liste d'indices de champ après.
-                    dataOrOffset = BitConverter.GetBytes((uint)0);
+                    dataOrOffset = BitConverter.GetBytes((DWORD)0);
                 }
             } else {
                 if (VField.isComplex(result.Type)) {
                     // On liera avec ses données plus tard.
-                    dataOrOffset = BitConverter.GetBytes((uint)0);
+                    dataOrOffset = BitConverter.GetBytes((DWORD)0);
                 } else {
                     // On stocke directement les données.
                     #region Switch de conversion de la valeur.
@@ -371,50 +371,50 @@ namespace Bioware.GFF {
                 }
             }
 
-            // On vérifie que la taille du tableau de bytes est bien de taille 'sizeof(uint)'
-            if (dataOrOffset.Length < sizeof(uint)) {
-                Array.Resize<byte>(ref dataOrOffset, sizeof(uint));
-            } else if (dataOrOffset.Length > sizeof(uint)) {
+            // On vérifie que la taille du tableau de bytes est bien de taille 'sizeof(DWORD)'
+            if (dataOrOffset.Length < sizeof(DWORD)) {
+                Array.Resize<byte>(ref dataOrOffset, sizeof(DWORD));
+            } else if (dataOrOffset.Length > sizeof(DWORD)) {
                 // Erreur ! Tableau trop grand !
             }
             // On stocke les données dans la structure.
             result.Type = type;
-            result.LabelIndex = (uint)labelIndex;
+            result.LabelIndex = (DWORD)labelIndex;
             result.DataOrOffset = BitConverter.ToUInt32(dataOrOffset, 0);
             // On renvoie la structure.
             return result;
         }
-        private void writeFieldSTR(GFieldSTR sfld) {
+        private void writeFieldStr(GffFieldStr sfld) {
             // Ne pas changer d'ordre !
-            _bw.Write((uint)sfld.Type);
-            _bw.Write((uint)sfld.LabelIndex);
-            _bw.Write((uint)sfld.DataOrOffset);
+            _bw.Write((DWORD)sfld.Type);
+            _bw.Write((DWORD)sfld.LabelIndex);
+            _bw.Write((DWORD)sfld.DataOrOffset);
         }
         private bool writeField(VField fld) {
             // Dans le cas spécial d'une structure, on n'écrit un champ associé uniquement
             // si la structure est possédée par une autre structure et n'est pas racine.
             if (!(fld is VStruct) || (fld is VStruct && (fld.Owner != null && fld.Owner is VStruct))) {
-                writeFieldSTR(createFieldSTR(fld));
+                writeFieldStr(createFieldStr(fld));
                 return true;
             }
             return false;
         }
 
-        private GStructSTR createStructSTR(VStruct str) {
-            GStructSTR sstr = new GStructSTR();
-            sstr.FieldCount = (uint)str.get().Count;
-            sstr.Type = (str.IsRoot) ? (GStructSTR.ROOT_TYPE) : (GStructSTR.STANDARD_TYPE);
+        private GffStructStr createStructStr(VStruct str) {
+            GffStructStr sstr = new GffStructStr();
+            sstr.FieldCount = (DWORD)str.get().Count;
+            sstr.Type = (str.IsRoot) ? (GffStructStr.ROOT_TYPE) : (GffStructStr.STANDARD_TYPE);
             sstr.DataOrOffset = 0;
             return sstr;
         }
-        private void writeStructSTR(GStructSTR sstr) {
+        private void writeStructSTR(GffStructStr sstr) {
             // Ne pas changer d'ordre !
-            _bw.Write((uint)sstr.Type);
-            _bw.Write((uint)sstr.DataOrOffset);
-            _bw.Write((uint)sstr.FieldCount);
+            _bw.Write((DWORD)sstr.Type);
+            _bw.Write((DWORD)sstr.DataOrOffset);
+            _bw.Write((DWORD)sstr.FieldCount);
         }
         private bool writeStruct(VStruct str) {
-            writeStructSTR(createStructSTR(str));
+            writeStructSTR(createStructStr(str));
             return true;
         }
 
