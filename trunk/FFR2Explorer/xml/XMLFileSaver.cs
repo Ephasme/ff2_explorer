@@ -5,30 +5,20 @@ using System.Text;
 using System.IO;
 
 using DWORD = System.UInt32;
-using Bioware.Virtual;
 using System.Xml;
+using Bioware.Virtual;
 
 namespace Bioware.XML {
 
-    public class XMLFileSaver {
-
-        public const string E_FIELD = "field";
-        public const string E_STRUCT = "struct";
-        public const string E_LIST = "list";
-        public const string E_STRING = "string";
-
-        public const string A_LABEL = "label";
-        public const string A_TYPE = "type";
-        public const string A_KEY = "key";
+    public class XmlFileSaver {
 
         XmlDocument doc;
 
         private string path;
         private VStruct v_root;
-        private XmlElement x_root;
         private XmlElement x_cur;
 
-        public XMLFileSaver(String path, VStruct root) {
+        public XmlFileSaver(String path, VStruct root) {
             initialize(path, root);
         }
 
@@ -50,9 +40,9 @@ namespace Bioware.XML {
             if (VField.isComposite(fld.Type)) {
                 VCpsitField cpsit = (VCpsitField)fld;
                 if (cpsit is VStruct) {
-                    elmt = doc.CreateElement(E_STRUCT);
+                    elmt = doc.CreateElement(XmlField.E_STRUCT);
                 } else {
-                    elmt = doc.CreateElement(E_LIST);
+                    elmt = doc.CreateElement(XmlField.E_LIST);
                 }
                 XmlElement parent = x_cur;
                 x_cur = elmt;
@@ -61,9 +51,9 @@ namespace Bioware.XML {
                 }
                 x_cur = parent;
             } else {
-                elmt = doc.CreateElement(E_FIELD);
-                elmt.SetAttribute(A_TYPE, Enum.GetName(fld.Type.GetType(), fld.Type));
-                string value = "";
+                elmt = doc.CreateElement(XmlField.E_FIELD);
+                elmt.SetAttribute(XmlAttrib.A_TYPE, Enum.GetName(fld.Type.GetType(), fld.Type));
+                string value = XmlConst.EMPTY_STRING;
                 #region Switch d'écriture de la valeur.
                 switch (fld.Type) {
                     case VType.BYTE:
@@ -105,9 +95,9 @@ namespace Bioware.XML {
                     case VType.CEXOLOCSTRING:
                         Dictionary<int, string> dic = ((VExoLocString)fld).Value;
                         foreach (KeyValuePair<int, string> kvp in dic) {
-                            XmlElement lstr_elmt = doc.CreateElement(E_STRING);
+                            XmlElement lstr_elmt = doc.CreateElement(XmlField.E_STRING);
                             lstr_elmt.AppendChild(doc.CreateTextNode(kvp.Value));
-                            lstr_elmt.SetAttribute(A_KEY, kvp.Key.ToString());
+                            lstr_elmt.SetAttribute(XmlAttrib.A_KEY, kvp.Key.ToString());
                             elmt.AppendChild(lstr_elmt);
                         }
                         break;
@@ -116,13 +106,17 @@ namespace Bioware.XML {
                         break;
                 }
                 #endregion
-                if (value != "") {
+                if (value != XmlConst.EMPTY_STRING) {
                     elmt.AppendChild(doc.CreateTextNode(value));
+                }
+                if (fld.Type == VType.CEXOLOCSTRING) {
+                    elmt.SetAttribute(XmlAttrib.A_STRREF, ((VExoLocString)fld).StringRef.ToString());
                 }
             }
             if (fld.Label != VStruct.DEFAULT_LABEL) {
-                elmt.SetAttribute(A_LABEL, fld.Label);
+                elmt.SetAttribute(XmlAttrib.A_LABEL, fld.Label);
             }
+            elmt.SetAttribute(XmlAttrib.A_INDEX, fld.Index.ToString());
             if (x_cur == null) {
                 doc.AppendChild(elmt);
             } else {

@@ -8,7 +8,16 @@ using DWORD = System.UInt32;
 using System.IO;
 using Bioware.GFF;
 namespace Bioware.Virtual {
+    public static class FieldError {
+        public const string VALUE_IS_INVALID = "La valeur assignée au champ n'est pas correcte.";
+    }
+    public class FieldException : ApplicationException {
+        public FieldException(string errorMessage)
+            : base(errorMessage) { }
+    }
+
     public abstract class VField {
+        public int Index { get; set; }
         public String Label { get; set; }
         public VCpsitField Owner { get; set; }
         public VType Type { get; private set; }
@@ -53,10 +62,11 @@ namespace Bioware.Virtual {
             }
             private set { }
         }
-        public VField(String label, VType type) {
+        public VField(String label, VType type, int index) {
             Owner = null;
             Label = label;
             Type = type;
+            Index = index;
         }
     }
 }

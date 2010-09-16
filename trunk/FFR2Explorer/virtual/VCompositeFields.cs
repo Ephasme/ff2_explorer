@@ -23,19 +23,19 @@ namespace Bioware.Virtual {
         public List<VField> get() {
             return childs;
         }
-        public VCpsitField(String label, VType type)
-            : base(label, type) {
+        public VCpsitField(String label, VType type, int index)
+            : base(label, type, index) {
             childs = new List<VField>();
         }
     }
     public sealed class VStruct : VCpsitField {
         public const string DEFAULT_LABEL = "struct";
-        public VStruct(String label, VType type) : base(label,type) { }
+        public VStruct(String label, int index) : base(label, VType.STRUCT, index) { }
         public void setLabel(string label) {
             Label = label;
         }
     }
     public sealed class VList : VCpsitField {
-        public VList(String label, VType type) : base(label,type) { }
+        public VList(String label, int index) : base(label, VType.LIST, index) { }
     }
 }
