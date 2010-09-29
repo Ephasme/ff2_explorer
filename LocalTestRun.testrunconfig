@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<TestRunConfiguration name="Série de tests locale" id="73969dd2-fbd1-4e64-987a-7bf0d6d5af16" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
-  <Description>Il s'agit d'une configuration de série de tests par défaut pour une série de tests locale.</Description>
-  <Timeouts runTimeout="1800000" testTimeout="180000" />
-  <TestTypeSpecific />
-</TestRunConfiguration>

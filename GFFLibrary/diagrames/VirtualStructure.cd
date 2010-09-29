@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GFFLibrary.Virtual.VComponent">
+    <Position X="1.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAEIAAAAAAAAAAAAAAAACAAAAQAQEAAAAAAAA=</HashCode>
+      <FileName>Virtual.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GFFLibrary.Virtual.VComposite">
+    <Position X="5.5" Y="0.5" Width="1.5" />
+    <NestedTypes>
+      <Delegate Name="GFFLibrary.Virtual.VComposite.HierarchyEventHandler" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Virtual.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Class Name="GFFLibrary.Virtual.VComposite.HierarchyEventArgs" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Virtual.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAIEAAAAAAAAAABAAACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Virtual.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Field Name="childs" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="GFFLibrary.Virtual.VField">
+    <Position X="1.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
+      <FileName>Virtual.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GFFLibrary.Virtual.VList">
+    <Position X="7" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Virtual.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GFFLibrary.Virtual.VStruct">
+    <Position X="4.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Virtual.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GFFLibrary.Virtual.VRoot">
+    <Position X="4" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
+      <FileName>Virtual.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GFFLibrary.Virtual.VListedStruct">
+    <Position X="6.25" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Virtual.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GFFLibrary.Virtual.VNormalStruct">
+    <Position X="8.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Virtual.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Tahoma" Size="8.25" />
+</ClassDiagram>

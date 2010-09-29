@@ -3,98 +3,172 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Bioware.GFF;
-using Bioware.Virtual;
-using Bioware.XML;
+using GFFLibrary.GFF;
+using GFFLibrary.Virtual;
+using GFFLibrary.XML;
 
 namespace FFR2QuickModem {
-    class Program {
+
+    class QuickModem {
+
+        public const string ERR_NO_DIRECTORY = "Erreur : l'application doit être placée dans un dossier contenant " + BASE_DIR + ".";
+
         public static string[] VALID_EXTENTION_LIST = { ".ifo", ".are", ".git", ".gic", ".utc", ".utd",
                                                         ".ute", ".uti", ".utp", ".uts", ".utm", ".utt",
                                                         ".utw", ".dlg", ".jrl", ".fac", ".itp", ".ptm",
                                                         ".ptt", ".bic" };
-        public const string DEFAULT_PATH = "D:/NWN/modules/ffr2_repository";
-        static void Main(string[] args) {
+        public const int SEPARATOR_SIZE = 70;
+        public const string CREATOR = "Peluso Loup-Stéphane";
+        public const string VERSION = "1.0";
+        public const string NAME = "FFR2QuickModem";
+        public const string BASE_DIR = "temp0";
+        public const string LIBRARY_NAME = "GFFLibrary.dll";
 
-            string path = DEFAULT_PATH;
-            bool again = true;
+        public const string XML_DIR = "/xml/";
+        public const string GFF_DIR = "/gff/";
+        public const string XML_EXT = ".xml";
 
-            while (again) {
-                Console.Clear();
-                Console.WriteLine("Bienvenue sur FFR2QuickModel par Loup-Stéphane PELUSO (c) 2010...");
-                Console.WriteLine("-----------------------------------------------------------------");
+        public const char MODELISATION = 'M';
+        public const char DEMODELISATION = 'D';
+        public const char QUITTER = 'Q';
 
-                Console.WriteLine("     Fonction de modélisation/démodélisation XML :");
-                Console.WriteLine("M : Modélisation GFF->XML");
-                Console.WriteLine("D : Démodélisation XML->GFF");
-                Console.WriteLine("G : Modem GFF->GFF");
-                Console.WriteLine("Q : Quitter");
-                Console.WriteLine("-----------------------------------------------------------------");
-                Console.WriteLine("c : Changer le chemin par défaut des fichiers du module.");
-                Console.WriteLine("Votre choix :");
+        public string ModemPath { get; set; }
+        public bool Again { get; set; }
+
+        GFileReader grd;
+        GFileWriter gwr;
+        XmlFileWriter xwr;
+        XmlFileReader xrd;
+        VRoot root;
+
+        public QuickModem() {
+            Initialize();
+        }
+
+        private void Initialize() {
+#if DEBUG
+            ModemPath = "D:/NWN/modules/ffr2_repository/";
+            Console.WriteLine("ATTENTION ! Ceci est une version de Débogage.");
+#else
+            if (Directory.Exists("./" + BASE_DIR)) {
+                ModemPath = Path.GetFullPath("./");
+                Again = true;
+            } else {
+                Console.WriteLine(ERR_NO_DIRECTORY);
+                PushToContinue();
+                Again = false;
+            }
+#endif
+            grd = new GFileReader();
+            gwr = new GFileWriter();
+            xwr = new XmlFileWriter();
+            xrd = new XmlFileReader();
+            root = new VRoot();
+        }
+
+        public void WriteHeader() {
+            Console.Clear();
+            Console.WriteLine("Bienvenue sur " + NAME + " par " + CREATOR + " (c) 2010 (Version " + VERSION + ")\nLe chemin actuel est :\n" + ModemPath);
+            WriteSeparator();
+            Console.WriteLine("Système de modélisation/démodélisation XML :\n" + MODELISATION + " : Modélisation GFF->XML\n" + DEMODELISATION + " : Démodélisation XML->GFF\n" + QUITTER + " : Quitter");
+            WriteSeparator();
+            Console.WriteLine();
+        }
+
+        public void WriteSeparator() {
+            int i = 0;
+            while (i++ < SEPARATOR_SIZE) {
+                Console.Write("-");
+            }
+            Console.WriteLine();
+        }
+
+        public delegate bool CopyChoiceMethod(FileInfo file);
+        public delegate void ActionMethod(FileInfo file);
+
+
+        internal void Start() {
+            while (Again) {
+                WriteHeader();
+                Console.WriteLine("Votre choix : ");
                 int result = Convert.ToChar(Console.Read());
-
                 switch (result) {
-                    case 'G':
-                        if (Directory.Exists(path)) {
-                            Directory.CreateDirectory(path + "/new");
-                            DirectoryInfo di = new DirectoryInfo(path);
-                            FileInfo[] l_fi = di.GetFiles();
-                            foreach (FileInfo fi in l_fi) {
-                                if (Array.IndexOf(VALID_EXTENTION_LIST, fi.Extension) != -1) {
-                                    GffFileReader gff_rd = new GffFileReader(fi.FullName);
-                                    VStruct root = gff_rd.getRootStruct();
-                                    GffFileSaver gff_sv = new GffFileSaver(root, path + "/new/" + fi.Name, Path.GetExtension(fi.FullName));
-                                    gff_sv.save();
-                                }
-                            }
-                        }
+                    case MODELISATION:
+                        CreateDirectory(XML_DIR);
+                        DoOnFiles(ModemPath + BASE_DIR, XML_DIR, IsGFF, ModelFile);
+                        PushToContinue();
                         break;
-                    case 'M':
-                        if (Directory.Exists(path)) {
-                            DirectoryInfo di = new DirectoryInfo(path);
-                            FileInfo[] l_fi = di.GetFiles();
-                            foreach (FileInfo fi in l_fi) {
-                                if (Array.IndexOf(VALID_EXTENTION_LIST, fi.Extension) != -1) {
-                                    GffFileReader gff_rd = new GffFileReader(fi.FullName);
-                                    VStruct root = gff_rd.getRootStruct();
-                                    XmlFileSaver xml_sv = new XmlFileSaver(fi.FullName + ".xml", root);
-                                    xml_sv.save();
-                                }
-                            }
-                        }
+                    case DEMODELISATION:
+                        CreateDirectory(GFF_DIR);
+                        DoOnFiles(ModemPath + XML_DIR, GFF_DIR, IsXML, DemodFile);
+                        PushToContinue();
                         break;
-                    case 'D':
-                        if (Directory.Exists(path)) {
-                            DirectoryInfo di = new DirectoryInfo(path);
-                            FileInfo[] l_fi = di.GetFiles();
-                            FileInfo[] xml_l_fi = di.GetFiles("*.xml");
-                            foreach (FileInfo fi in xml_l_fi) {
-                                string spath = fi.FullName.Remove(fi.FullName.Length-4);
-                                string sext = Path.GetExtension(spath);
-                                XmlFileReader xml_rd = new XmlFileReader(fi.FullName);
-                                VStruct root = xml_rd.getRootStruct();
-                                GffFileSaver gff_sv = new GffFileSaver(root, spath+".new.gff", sext);
-                                gff_sv.save();
-                            }
-                        }
-                        break;
-                    case 'Q':
-                        Console.WriteLine("Fermeture de l'application.");
-                        again = false;
-                        break;
-                    case 'c':
-                        Console.Clear();
-                        Console.WriteLine("Changement du chemin par défaut.");
-                        if (Directory.Exists(path)) {
-                            path = Console.ReadLine();
-                            Console.WriteLine("Changement effectué avec succès");
-                        } else {
-                            Console.WriteLine("Impossible de trouver le chemin spécifié.");
-                        }
+                    case QUITTER:
+                        SetToClose();
                         break;
                 }
             }
+        }
+        public void DoOnFiles(string path, string copy_path, CopyChoiceMethod copyMethod, ActionMethod actionMethod) {
+            if (Directory.Exists(path)) {
+                string[] l_sfi = Directory.GetFiles(path);
+                int cent = 0;
+                for (int i = 0; i < l_sfi.Length; i++) {
+                    if (cent <= ((int)(SEPARATOR_SIZE * i) / l_sfi.Length)) {
+                        cent++;
+                        Console.Write(".");
+                    }
+                    FileInfo fi = new FileInfo(l_sfi[i]);
+                    if (copyMethod(fi)) {
+                        actionMethod(fi);
+                    } else {
+                        File.Copy(fi.FullName, ModemPath + copy_path + fi.Name, true);
+                    }
+                }
+                Console.Write("\n");
+            }
+        }
+
+        private bool IsXML(FileInfo fi) {
+            return fi.Extension.ToLower() == XML_EXT.ToLower();
+        }
+        private bool IsGFF(FileInfo fi) {
+            return Array.IndexOf(VALID_EXTENTION_LIST, fi.Extension.ToLower()) != -1;
+        }
+
+        private void ModelFile(FileInfo fi) {
+            string path = ModemPath + XML_DIR + fi.Name + XML_EXT;
+            grd.Load(fi.FullName);
+            root = grd.RootStruct;
+            xwr.Save(root, path);
+        }
+        private void DemodFile(FileInfo fi) {
+            string sname = fi.Name.Remove(fi.Name.Length - 4);
+            string sext = Path.GetExtension(sname);
+            xrd.Load(fi.FullName);
+            root = xrd.RootStruct;
+            gwr.Save(root, sext, ModemPath + GFF_DIR + sname);
+        }
+
+        private void SetToClose() {
+            Console.WriteLine("Fermeture de l'application.");
+            Again = false;
+        }
+
+        private static void PushToContinue() {
+            Console.WriteLine("Appuyez sur une touche pour continuer...");
+            Console.ReadKey(false);
+        }
+        private void CreateDirectory(string add) {
+            DirectoryInfo di = Directory.CreateDirectory(ModemPath + add);
+            Console.WriteLine("Création du répertoire : {0}", di.FullName);
+        }
+    }
+
+    class Program {
+        static void Main(string[] args) {
+            QuickModem qm = new QuickModem();
+            qm.Start();
         }
     }
 }

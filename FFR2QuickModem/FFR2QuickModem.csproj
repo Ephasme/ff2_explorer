@@ -12,6 +12,9 @@
     <AssemblyName>FFR2QuickModem</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ApplicationIcon>Resources\FFR2QuickModem.ico</ApplicationIcon>
+    <NoWin32Manifest>true</NoWin32Manifest>
+    <StartupObject>FFR2QuickModem.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,6 +38,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -49,9 +53,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FFR2Explorer\GFFSystem.csproj">
-      <Project>{946D2D4A-776C-46A4-8C4C-2AB9B167EA0E}</Project>
-      <Name>GFFSystem</Name>
+    <Content Include="Resources\FFR2QuickModem.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GFFLibrary\GFFLibrary.csproj">
+      <Project>{314BEBC3-43B8-4BBE-BB81-8746B8E2328E}</Project>
+      <Name>GFFLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
