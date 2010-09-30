@@ -16,9 +16,9 @@ namespace GFFLibrary.XML {
         public const string E_LIST = "list";
         public const string E_FIELD = "field";
         public const string E_CHILDS = "childs";
-        public const string E_LABEL = "label";
         public const string E_VALUE = "value";
 
+        public const string A_LABEL = "label";
         public const string A_INDEX = "Index";
         public const string A_TYPE = "Type";
         public const string A_CLASS = "Class";
@@ -41,7 +41,6 @@ namespace GFFLibrary.XML {
             xdoc = new XmlDocument();
         }
     }
-
     public class XmlFileReader : XmlFile {
 
         public XmlFileReader()
@@ -84,12 +83,11 @@ namespace GFFLibrary.XML {
 
         private VComponent CreateComponent(XmlNode node) {
             VComponent cpnt = null;
-            VLabel cpnt_lbl = GetLabel(node);
             switch (node.Name) {
                 case E_STRUCT:
                     switch (GetStructClass(node)) {
                         case S_CLASS_NORMAL:
-                            cpnt = new VNormalStruct(cpnt_lbl, GetFieldFrameIndex(node), GetIndex(node), GetStructType(node));
+                            cpnt = new VNormalStruct(GetLabel(node), GetFieldFrameIndex(node), GetIndex(node), GetStructType(node));
                             break;
                         case S_CLASS_LISTED:
                             cpnt = new VListedStruct(GetIndex(node), GetStructType(node));
@@ -100,10 +98,10 @@ namespace GFFLibrary.XML {
                     }
                     break;
                 case E_LIST:
-                    cpnt = new VList(cpnt_lbl, GetIndex(node));
+                    cpnt = new VList(GetLabel(node), GetIndex(node));
                     break;
                 case E_FIELD:
-                    cpnt = new VField(cpnt_lbl, GetFieldType(node), GetFieldData(node), GetIndex(node));
+                    cpnt = new VField(GetLabel(node), GetFieldType(node), GetFieldData(node), GetIndex(node));
                     break;
             }
             XmlNode childs = node.SelectSingleNode(E_CHILDS);
@@ -162,26 +160,11 @@ namespace GFFLibrary.XML {
                 throw new ApplicationException("Impossible de récupérer la classe.");
             }
         }
-        private VLabel GetLabel(XmlNode node) {
-            XmlNodeList nl_lbl = node.SelectNodes(E_LABEL);
-            if (nl_lbl.Count == 0) {
-                return VLabel.EMPTY_LABEL;
-            } else if (nl_lbl.Count == 1) {
-                XmlNode n_lbl = nl_lbl[0];
-                string lbl_text = null;
-                int lbl_index;
-                if (int.TryParse(n_lbl.Attributes[A_INDEX].Value, out lbl_index)) {
-                    if (n_lbl.FirstChild != null) {
-                        lbl_text = n_lbl.FirstChild.Value;
-                        return new VLabel(lbl_text, (uint)lbl_index);
-                    } else {
-                        throw new ApplicationException("Label sans valeur.");
-                    }
-                } else {
-                    throw new ApplicationException("Index invalide.");
-                }
+        private string GetLabel(XmlNode node) {
+            if (node.Attributes[A_LABEL] != null) {
+                return node.Attributes[A_LABEL].Value;
             } else {
-                throw new ApplicationException("Nombre de label incorrect.");
+                throw new ApplicationException("Impossible de récupérer le label.");
             }
         }
     }
@@ -234,14 +217,6 @@ namespace GFFLibrary.XML {
             }
         }
 
-        private void WriteLabel(XmlElement x_child, VComponent v_child) {
-            XmlElement x_label = xdoc.CreateElement(E_LABEL);
-            x_label.SetAttribute(A_INDEX, v_child.Label.Index.ToString());
-            XmlNode x_text = xdoc.CreateTextNode(v_child.Label.Text);
-            x_label.AppendChild(x_text);
-            x_child.AppendChild(x_label);
-        }
-
         private void WriteStruct(XmlElement n, VStruct s) {
             if (s is VNormalStruct) {
                 VNormalStruct ns = (VNormalStruct)s;
@@ -274,23 +249,9 @@ namespace GFFLibrary.XML {
             XmlNode x_value_text = xdoc.CreateTextNode(fld.FieldData.ToHexaString());
             x_value.AppendChild(x_value_text);
         }
+
+        private void WriteLabel(XmlElement n, VComponent c) {
+            n.SetAttribute(A_LABEL, c.Label);
+        }
     }
 }
-/*
-VComponent v_child = null;
-VLabel v_child_lbl = GetLabel(x_root);
-switch (x_root.Name) {
-    case E_FIELD:
-        v_child = new VField(v_child_lbl, GetFieldType(x_root), GetFieldData(x_root), GetFieldIndex(x_root));
-        break;
-    case E_LIST:
-        break;
-    case E_STRUCT:
-        break;
-}
-XmlNode x_childs = x_root.SelectSingleNode(E_CHILDS);
-if (x_childs.HasChildNodes) {
-    foreach (XmlNode node in x_childs.ChildNodes) {
-        LoadNode(v_child, node);
-    }
-}*/

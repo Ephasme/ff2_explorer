@@ -35,24 +35,10 @@ namespace GFFLibrary.Virtual {
             }
         }
     }
-
-    public class VLabel {
-        public const string NO_TEXT = "NO_TEXT";
-        public const uint NO_ID = uint.MaxValue;
-        public const uint LENGTH = 16;
-        public string Text { get; set; }
-        public uint Index { get; set; }
-        public static VLabel EMPTY_LABEL = new VLabel();
-        private VLabel() : this(NO_TEXT, NO_ID) { }
-        public VLabel(string text, uint index) {
-            Text = text;
-            Index = index;
-        }
-    }
-
+    
     public abstract class VComponent {
         public uint Index { get; set; }
-        public VLabel Label { get; set; }
+        public string Label { get; set; }
         public VComposite Owner { get; set; }
         public VType Type { get; private set; }
         public static bool IsSimple(VType type) {
@@ -91,7 +77,7 @@ namespace GFFLibrary.Virtual {
                 return (Owner == null);
             }
         }
-        public VComponent(VLabel label, VType type, uint index) {
+        public VComponent(string label, VType type, uint index) {
             Owner = null;
             Label = label;
             Type = type;
@@ -100,7 +86,7 @@ namespace GFFLibrary.Virtual {
     }
     public sealed class VField : VComponent {
         public VFieldData FieldData { get; set; }
-        public VField(VLabel label, VType type, VFieldData vfd, uint index)
+        public VField(string label, VType type, VFieldData vfd, uint index)
             : base(label, type, index) {
             FieldData = vfd;
         }
@@ -129,7 +115,7 @@ namespace GFFLibrary.Virtual {
         public List<VComponent> Get() {
             return childs;
         }
-        public VComposite(VLabel label, VType type, uint index)
+        public VComposite(string label, VType type, uint index)
             : base(label, type, index) {
             childs = new List<VComponent>();
         }
@@ -137,28 +123,28 @@ namespace GFFLibrary.Virtual {
 
     public abstract class VStruct : VComposite {
         public uint StructType { set; get; }
-        public VStruct(VLabel label, uint index, uint type)
+        public VStruct(string label, uint index, uint type)
             : base(label, VType.STRUCT, index) {
             StructType = type;
         }
     }
     public sealed class VNormalStruct : VStruct {
         public uint FieldFrameIndex { set; get; }
-        public VNormalStruct(VLabel label, uint field_frame_index, uint struct_frame_index, uint struct_type)
+        public VNormalStruct(string label, uint field_frame_index, uint struct_frame_index, uint struct_type)
             : base(label, struct_frame_index, struct_type) {
             FieldFrameIndex = field_frame_index;
         }
     }
     public sealed class VListedStruct : VStruct {
         public VListedStruct(uint index, uint type)
-            : base(VLabel.EMPTY_LABEL, index, type) {
+            : base(null, index, type) {
         }
     }
     public sealed class VRoot : VStruct {
         public const int ROOT_INDEX = 0;
         public const uint ROOT_TYPE = uint.MaxValue;
         public VRoot()
-            : base(VLabel.EMPTY_LABEL, ROOT_INDEX, ROOT_TYPE) {
+            : base(null, ROOT_INDEX, ROOT_TYPE) {
         }
     }
 
@@ -170,6 +156,6 @@ namespace GFFLibrary.Virtual {
                 throw new ApplicationException("Tentative d'ajout d'autre chose qu'une structure à une liste.");
             }
         }
-        public VList(VLabel label, uint index) : base(label, VType.LIST, index) { }
+        public VList(string label, uint index) : base(label, VType.LIST, index) { }
     }
 }
