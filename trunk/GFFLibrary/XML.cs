@@ -15,15 +15,12 @@ namespace GFFLibrary.XML {
         public const string E_STRUCT = "struct";
         public const string E_LIST = "list";
         public const string E_FIELD = "field";
-        public const string E_CHILDS = "childs";
-        public const string E_VALUE = "value";
 
         public const string A_LABEL = "label";
-        public const string A_INDEX = "Index";
-        public const string A_TYPE = "Type";
-        public const string A_CLASS = "Class";
-        public const string A_FIELD_FRAME_INDEX = "FieldFrameIndex";
-        public const string A_STRUCT_TYPE = "StructType";
+        public const string A_INDEX = "index";
+        public const string A_TYPE = "type";
+        public const string A_CLASS = "class";
+        public const string A_FIELD_INDEX = "field_id";
 
         public const string S_CLASS_NORMAL = "normal";
         public const string S_CLASS_LISTED = "listed";
@@ -104,26 +101,16 @@ namespace GFFLibrary.XML {
                     cpnt = new VField(GetLabel(node), GetFieldType(node), GetFieldData(node), GetIndex(node));
                     break;
             }
-            XmlNode childs = node.SelectSingleNode(E_CHILDS);
-            if (childs != null) {
-                if (cpnt is VComposite) {
-                    VComposite cpsit = (VComposite)cpnt;
-                    foreach (XmlNode child in childs.ChildNodes) {
-                        cpsit.Add(CreateComponent(child));
-                    }
-                } else {
-                    throw new ApplicationException("Le composant devrait pouvoir accueuillir des éléments enfants.");
+            if (cpnt is VComposite) {
+                VComposite cpsit = (VComposite)cpnt;
+                foreach (XmlNode child in node.ChildNodes) {
+                    cpsit.Add(CreateComponent(child));
                 }
             }
             return cpnt;
         }
         private VFieldData GetFieldData(XmlNode node) {
-            XmlNode value = node.SelectSingleNode(E_VALUE);
-            if (value != null) {
-                return new VFieldData(XmlFileReader.StringToByteArray(value.InnerText));
-            } else {
-                throw new ApplicationException("Impossible de récupérer la valeur de champ.");
-            }
+            return new VFieldData(XmlFileReader.StringToByteArray(node.InnerText));
         }
         private VType GetFieldType(XmlNode node) {
             if (node.Attributes[A_TYPE] != null) {
@@ -133,8 +120,8 @@ namespace GFFLibrary.XML {
             }
         }
         private uint GetStructType(XmlNode node) {
-            if (node.Attributes[A_STRUCT_TYPE] != null) {
-                return uint.Parse(node.Attributes[A_STRUCT_TYPE].Value);
+            if (node.Attributes[A_TYPE] != null) {
+                return uint.Parse(node.Attributes[A_TYPE].Value);
             } else {
                 throw new ApplicationException("Impossible de récupérer le type de la structure.");
             }
@@ -147,8 +134,8 @@ namespace GFFLibrary.XML {
             }
         }
         private uint GetFieldFrameIndex(XmlNode node) {
-            if (node.Attributes[A_FIELD_FRAME_INDEX] != null) {
-                return uint.Parse(node.Attributes[A_FIELD_FRAME_INDEX].Value);
+            if (node.Attributes[A_FIELD_INDEX] != null) {
+                return uint.Parse(node.Attributes[A_FIELD_INDEX].Value);
             } else {
                 throw new ApplicationException("Impossible de récupérer l'index associé au field.");
             }
@@ -206,13 +193,9 @@ namespace GFFLibrary.XML {
             x_root.AppendChild(x_child);
 
             if (v_child is VComposite) {
-                VComposite cpsit = (VComposite)v_child;
-
-                XmlElement x_childs = xdoc.CreateElement(E_CHILDS);
-                x_child.AppendChild(x_childs);
-
-                foreach (VComponent grandson in cpsit.Get()) {
-                    Write(x_childs, grandson);
+                VComposite cv_child = (VComposite)v_child;
+                foreach (VComponent v_child2 in cv_child.Get()) {
+                    Write(x_child, v_child2);
                 }
             }
         }
@@ -222,14 +205,14 @@ namespace GFFLibrary.XML {
                 VNormalStruct ns = (VNormalStruct)s;
                 WriteLabel(n, s);
                 n.SetAttribute(A_CLASS, S_CLASS_NORMAL);
-                n.SetAttribute(A_FIELD_FRAME_INDEX, ns.FieldFrameIndex.ToString());
+                n.SetAttribute(A_FIELD_INDEX, ns.FieldFrameIndex.ToString());
                 n.SetAttribute(A_INDEX, ns.Index.ToString());
-                n.SetAttribute(A_STRUCT_TYPE, ns.StructType.ToString());
+                n.SetAttribute(A_TYPE, ns.StructType.ToString());
             } else if (s is VListedStruct) {
                 VListedStruct ls = (VListedStruct)s;
                 n.SetAttribute(A_CLASS, S_CLASS_LISTED);
                 n.SetAttribute(A_INDEX, ls.Index.ToString());
-                n.SetAttribute(A_STRUCT_TYPE, ls.StructType.ToString());
+                n.SetAttribute(A_TYPE, ls.StructType.ToString());
             } else if (s is VRoot) {
                 n.SetAttribute(A_CLASS, S_CLASS_ROOT);
             }
@@ -244,10 +227,10 @@ namespace GFFLibrary.XML {
             WriteLabel(n, c);
             n.SetAttribute(A_INDEX, fld.Index.ToString());
             n.SetAttribute(A_TYPE, Enum.GetName(typeof(VType), fld.Type));
-            XmlNode x_value = xdoc.CreateElement(E_VALUE);
-            n.AppendChild(x_value);
-            XmlNode x_value_text = xdoc.CreateTextNode(fld.FieldData.ToHexaString());
-            x_value.AppendChild(x_value_text);
+            string data = fld.FieldData.ToHexaString();
+            if (data != "") {
+                n.AppendChild(xdoc.CreateTextNode(data));
+            }
         }
 
         private void WriteLabel(XmlElement n, VComponent c) {
