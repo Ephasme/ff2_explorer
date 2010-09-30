@@ -21,7 +21,11 @@ namespace FFR2QuickModem {
         public const string CREATOR = "Peluso Loup-Stéphane";
         public const string VERSION = "1.0";
         public const string NAME = "FFR2QuickModem";
+#if DEBUG
+        public const string BASE_DIR = "ffr2_repository";
+#else
         public const string BASE_DIR = "temp0";
+#endif
         public const string LIBRARY_NAME = "GFFLibrary.dll";
 
         public const string XML_DIR = "/xml/";
@@ -47,8 +51,9 @@ namespace FFR2QuickModem {
 
         private void Initialize() {
 #if DEBUG
-            ModemPath = "D:/NWN/modules/ffr2_repository/";
+            ModemPath = "D:/NWN/modules/";
             Console.WriteLine("ATTENTION ! Ceci est une version de Débogage.");
+            Again = true;
 #else
             if (Directory.Exists("./" + BASE_DIR)) {
                 ModemPath = Path.GetFullPath("./");
