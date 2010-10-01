@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using GFFLibrary.GFF;
-using GFFLibrary.Virtual;
-using GFFLibrary.XML;
+using GFFSystem.GFF;
+using GFFSystem.Virtual;
+using GFFSystem.XML;
 
 namespace FFR2QuickModem {
 
@@ -41,9 +41,9 @@ namespace FFR2QuickModem {
 
         GFileReader grd;
         GFileWriter gwr;
-        XmlFileWriter xwr;
-        XmlFileReader xrd;
-        VRoot root;
+        XFileWriter xwr;
+        XFileReader xrd;
+        VRootStruct root;
 
         public QuickModem() {
             Initialize();
@@ -66,9 +66,9 @@ namespace FFR2QuickModem {
 #endif
             grd = new GFileReader();
             gwr = new GFileWriter();
-            xwr = new XmlFileWriter();
-            xrd = new XmlFileReader();
-            root = new VRoot();
+            xwr = new XFileWriter();
+            xrd = new XFileReader();
+            root = new VRootStruct();
         }
 
         public void WriteHeader() {

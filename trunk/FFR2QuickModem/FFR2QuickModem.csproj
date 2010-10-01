@@ -56,9 +56,9 @@
     <Content Include="Resources\FFR2QuickModem.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GFFLibrary\GFFLibrary.csproj">
-      <Project>{314BEBC3-43B8-4BBE-BB81-8746B8E2328E}</Project>
-      <Name>GFFLibrary</Name>
+    <ProjectReference Include="..\GFFSystem\GFFSystem.csproj">
+      <Project>{AD42E5F6-CFE5-45E1-8396-23196E8AD53F}</Project>
+      <Name>GFFSystem</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

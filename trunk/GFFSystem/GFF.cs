@@ -4,9 +4,17 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Tools;
-using GFFLibrary.Virtual;
+using GFFSystem.Virtual;
+using GFFSystem.Exception;
 
-namespace GFFLibrary.GFF {
+namespace GFFSystem.GFF {
+    public static class GConst {
+        public const string ENCODING_NAME = "ISO-8859-1";
+        public const string VERSION = "V3.2";
+        public const char LABEL_PADDING_CHARACTER = '\0';
+        public const int LABEL_LENGTH = 16;
+    }
+
     public class GBinaryReader : BinaryReader {
 
         /// <summary>
@@ -267,13 +275,6 @@ namespace GFFLibrary.GFF {
         }
     }
 
-    public static class GConst {
-        public const string ENCODING_NAME = "ISO-8859-1";
-        public const string VERSION = "V3.2";
-        public const char LABEL_PADDING_CHARACTER = '\0';
-        public const int LABEL_LENGTH = 16;
-    }
-
     public abstract class GBasicFrame {
         public const int TYPE = 0;
         public const int VALUE_COUNT = 3;
@@ -315,6 +316,7 @@ namespace GFFLibrary.GFF {
             this.LabelIndex = LabelIndex;
             this.DataOrDataOffset = DataOrDataOffset;
         }
+        public GFieldFrame() : this(0, 0, 0) { }
     }
     public class GStructFrame : GBasicFrame {
         public const int DATA_OR_DATA_OFFSET = 1;
@@ -340,6 +342,65 @@ namespace GFFLibrary.GFF {
             this.FieldCount = FieldCount;
             this.DataOrDataOffset = DataOrDataOffset;
         }
+        public GStructFrame() : this(0, 0, 0) { }
+    }
+
+    public abstract class GFile {
+        protected GHeader h;
+
+        protected List<GFieldFrame> l_fa;
+        protected List<GStructFrame> l_sa;
+        protected List<string> l_lbl;
+
+        protected MemoryStream ms_f_db, ms_f_ia, ms_l_ia;
+        protected GBinaryWriter bw_f_db, bw_f_ia, bw_l_ia;
+
+        public List<GStructFrame> StructArray {
+            get {
+                return l_sa;
+            }
+        }
+        public List<GFieldFrame> FieldArray {
+            get {
+                return l_fa;
+            }
+        }
+        public List<string> LabelArray {
+            get {
+                return l_lbl;
+            }
+        }
+        public MemoryStream FieldDataBlock {
+            get {
+                return ms_f_db;
+            }
+        }
+        public MemoryStream FieldIndicesArray {
+            get {
+                return ms_f_ia;
+            }
+        }
+        public MemoryStream ListIndicesArray {
+            get {
+                return ms_l_ia;
+            }
+        }
+
+        public GFile() {
+        }
+
+        protected void Initialize() {
+            h = new GHeader();
+            l_sa = new List<GStructFrame>();
+            l_fa = new List<GFieldFrame>();
+            l_lbl = new List<string>();
+            ms_f_db = new MemoryStream();
+            bw_f_db = new GBinaryWriter(ms_f_db);
+            ms_f_ia = new MemoryStream();
+            bw_f_ia = new GBinaryWriter(ms_f_ia);
+            ms_l_ia = new MemoryStream();
+            bw_l_ia = new GBinaryWriter(ms_l_ia);
+        }
     }
 
     public class GFactory {
@@ -362,7 +423,7 @@ namespace GFFLibrary.GFF {
                     uint s_index = f.DataOrDataOffset;
                     GStructFrame s = gfRdr.StructArray[(int)s_index];
                     uint s_type = s.Type;
-                    VNormalStruct vs = new VNormalStruct(f_lbl, f_index, s_index, s_type);
+                    VInFieldStruct vs = new VInFieldStruct(f_lbl, s_type);
 
                     PopulateStruct(vs, GetStructFieldIndices(s));
 
@@ -373,17 +434,17 @@ namespace GFFLibrary.GFF {
                     long pos = br.Stream.Position;
                     br.Stream.Position = f.DataOrDataOffset;
                     int size = (int)br.ReadDWORD();
-                    VList vl = new VList(f_lbl, f_index);
+                    VList vl = new VList(f_lbl);
                     List<uint> struct_id_list = br.ListDWORDS(size);
                     foreach (uint struct_id in struct_id_list) {
                         GStructFrame s_frame = gfRdr.StructArray[(int)struct_id];
-                        VListedStruct vls = new VListedStruct(struct_id, s_frame.Type);
+                        VInListStruct vls = new VInListStruct(s_frame.Type);
                         PopulateStruct(vls, GetStructFieldIndices(s_frame));
                         vl.Add(vls);
                     }
                     return vl;
                 } else {
-                    throw new ApplicationException("Impossible de déterminer le type composite.");
+                    throw new CompositeException(GError.UNKNOWN_COMPOSITE_TYPE);
                 }
             } else {
                 VFieldData f_dat;
@@ -414,20 +475,20 @@ namespace GFFLibrary.GFF {
                             size = (int)br.ReadUInt32();
                             break;
                         default:
-                            throw new ApplicationException("Impossible de déterminer le type large.");
+                            throw new FieldException(GError.UNKNOWN_LARGE_FIELD_TYPE);
                     }
                     #endregion
                     f_dat = new VFieldData(br.ReadBytes(size));
                     br.Stream.Position = pos;
                 } else {
-                    throw new ApplicationException("Impossible de déterminer le type de composant non composite.");
+                    throw new FieldException(GError.UNKNOWN_FIELD_TYPE);
                 }
-                return new VField(f_lbl, f_type, f_dat, f_index);
+                return new VField(f_lbl, f_type, f_dat);
             }
-            throw new ApplicationException("Impossible de déterminer le type de composant.");
+            throw new ComponentException(GError.UNKNOWN_COMPONENT_TYPE);
         }
 
-        private void PopulateStruct(VStruct vs, List<uint> FieldIndexes) {
+        private void PopulateStruct(VInFieldStruct vs, List<uint> FieldIndexes) {
             foreach (uint f_id in FieldIndexes) {
                 VComponent cpnt = CreateComponent(f_id);
                 vs.Add(cpnt);
@@ -435,85 +496,26 @@ namespace GFFLibrary.GFF {
         }
 
         private List<uint> GetStructFieldIndices(GStructFrame s_frame) {
-            List<uint> FieldIndexes = new List<uint>();
+            List<uint> FieldIndices = new List<uint>();
             if (s_frame.FieldCount > 1) {
                 GBinaryReader br = new GBinaryReader(gfRdr.FieldIndicesArray);
                 long pos = br.Stream.Position;
                 br.Stream.Position = s_frame.DataOrDataOffset;
-                FieldIndexes = br.ListDWORDS((int)s_frame.FieldCount);
+                FieldIndices = br.ListDWORDS((int)s_frame.FieldCount);
                 br.Stream.Position = pos;
             } else if (s_frame.FieldCount == 1) {
-                FieldIndexes.Add(s_frame.DataOrDataOffset);
+                FieldIndices.Add(s_frame.DataOrDataOffset);
             }
-            return FieldIndexes;
+            return FieldIndices;
         }
 
-        public VRoot CreateRoot() {
-            GStructFrame root_frame = gfRdr.StructArray[VRoot.ROOT_INDEX];
-            VRoot root = new VRoot();
+        public VRootStruct CreateRoot() {
+            GStructFrame root_frame = gfRdr.StructArray[(int)VRootStruct.ROOT_INDEX];
+            VRootStruct root = new VRootStruct();
             PopulateStruct(root, GetStructFieldIndices(root_frame));
             return root;
         }
     }
-
-    public abstract class GFile {
-        protected GHeader h;
-
-        protected DoubleDictionary<int, GFieldFrame> d_ff;
-        protected DoubleDictionary<int, GStructFrame> d_sf;
-        protected List<string> l_lbl;
-
-        protected MemoryStream ms_f_db, ms_f_ia, ms_l_ia;
-        protected GBinaryWriter bw_f_db, bw_f_ia, bw_l_ia;
-
-        public DoubleDictionary<int, GStructFrame> StructArray {
-            get {
-                return d_sf;
-            }
-        }
-        public DoubleDictionary<int, GFieldFrame> FieldArray {
-            get {
-                return d_ff;
-            }
-        }
-        public List<string> LabelArray {
-            get {
-                return l_lbl;
-            }
-        }
-        public MemoryStream FieldDataBlock {
-            get {
-                return ms_f_db;
-            }
-        }
-        public MemoryStream FieldIndicesArray {
-            get {
-                return ms_f_ia;
-            }
-        }
-        public MemoryStream ListIndicesArray {
-            get {
-                return ms_l_ia;
-            }
-        }
-
-        public GFile() {
-        }
-
-        protected void Initialize() {
-            h = new GHeader();
-            d_sf = new DoubleDictionary<int, GStructFrame>();
-            d_ff = new DoubleDictionary<int, GFieldFrame>();
-            l_lbl = new List<string>();
-            ms_f_db = new MemoryStream();
-            bw_f_db = new GBinaryWriter(ms_f_db);
-            ms_f_ia = new MemoryStream();
-            bw_f_ia = new GBinaryWriter(ms_f_ia);
-            ms_l_ia = new MemoryStream();
-            bw_l_ia = new GBinaryWriter(ms_l_ia);
-        }
-    }
-
     public class GFileReader : GFile {
 
         private GFactory fac;
@@ -538,14 +540,13 @@ namespace GFFLibrary.GFF {
                 br.Close();
             }
         }
-
         private void LoadStructures() {
             long pos = br.Stream.Position;
             br.Stream.Position = h.StructOffset;
             for (int i = 0; i < h.StructCount; i++) {
                 Queue<uint> q = br.EnqueueDWORDs((int)GBasicFrame.VALUE_COUNT);
                 GStructFrame sf = new GStructFrame(q.Dequeue(), q.Dequeue(), q.Dequeue());
-                d_sf.Add(i, sf);
+                l_sa.Add(sf);
             }
             br.Stream.Position = pos;
         }
@@ -555,7 +556,7 @@ namespace GFFLibrary.GFF {
             for (int i = 0; i < h.FieldCount; i++) {
                 Queue<uint> q = br.EnqueueDWORDs((int)GBasicFrame.VALUE_COUNT);
                 GFieldFrame ff = new GFieldFrame(q.Dequeue(), q.Dequeue(), q.Dequeue());
-                d_ff.Add(i, ff);
+                l_fa.Add(ff);
             }
             br.Stream.Position = pos;
         }
@@ -587,8 +588,7 @@ namespace GFFLibrary.GFF {
             ms_l_ia = new MemoryStream(br.ReadBytes((int)(h.ListIndicesCount)));
             br.Stream.Position = pos;
         }
-
-        public VRoot RootStruct {
+        public VRootStruct RootStruct {
             get {
                 return fac.CreateRoot();
             }
@@ -597,17 +597,22 @@ namespace GFFLibrary.GFF {
     public class GFileWriter : GFile {
 
         GBinaryWriter bw;
-        VRoot Root;
+        VRootStruct Root;
         string Ext, SavePath;
+
+        public DoubleDictionary<GFieldFrame, VComponent> d_fa_f;
+        public DoubleDictionary<GStructFrame, VStruct> d_sa_s;
 
         public GFileWriter()
             : base() {
         }
 
-        public void Save(VRoot root, string ext, string path) {
+        public void Save(VRootStruct root, string ext, string path) {
             Initialize();
             Root = root;
             Ext = ext.TrimStart('.');
+            d_fa_f = new DoubleDictionary<GFieldFrame, VComponent>();
+            d_sa_s = new DoubleDictionary<GStructFrame, VStruct>();
             SavePath = path;
             if (File.Exists(path)) {
                 bw = new GBinaryWriter(File.Open(path, FileMode.Truncate));
@@ -615,12 +620,109 @@ namespace GFFLibrary.GFF {
                 bw = new GBinaryWriter(File.Open(path, FileMode.Create));
             }
 
-            Analyse(Root);
+            CreateFrames(Root);
+            FillFrames();
             WriteData();
 
             bw.Close();
         }
+        private uint GetLabelIndex(string lbl) {
+            if (lbl != null) {
+                if (!l_lbl.Contains(lbl)) {
+                    l_lbl.Add(lbl);
+                    return (uint)l_lbl.Count - 1;
+                } else {
+                    return (uint)l_lbl.IndexOf(lbl);
+                }
+            } else {
+                return uint.MaxValue;
+            }
+        }
+        private void FillFrames() {
+            foreach (GStructFrame s in l_sa) {
+                VStruct vs = d_sa_s[s];
+                s.Type = vs.StructType;
+                s.DataOrDataOffset = GetStructDataOrOffset(vs);
+                s.FieldCount = (uint)vs.Get().Count;
+            }
+            foreach (GFieldFrame f in l_fa) {
+                VComponent cpnt = d_fa_f[f];
+                f.LabelIndex = GetLabelIndex(cpnt.Label);
+                f.Type = (uint)cpnt.Type;
+                if (cpnt is VStruct) {
+                    f.DataOrDataOffset = (uint)l_sa.IndexOf(d_sa_s[(VStruct)cpnt]);
+                } else if (cpnt is VList) {
+                    f.DataOrDataOffset = GetListDataOrOffset((VList)cpnt);
+                } else if (cpnt is VField) {
+                    f.DataOrDataOffset = GetFieldDataOrOffset((VField)cpnt);
+                } else {
+                    throw new ComponentException(GError.UNKNOWN_COMPONENT_TYPE);
+                }
+            }
+        }
+        private uint GetStructDataOrOffset(VStruct vs) {
+            if (vs.Get().Count == 0) {
+                return uint.MaxValue;
+            } else if (vs.Get().Count == 1) {
+                return (uint)l_fa.IndexOf(d_fa_f[vs.Get()[0]]);
+            } else {
+                long pos = ms_f_ia.Position;
+                foreach (VComponent cpnt in vs.Get()) {
+                    bw_f_ia.Write(l_fa.IndexOf(d_fa_f[cpnt]));
+                }
+                return (uint)pos;
+            }
+        }
+        private uint GetListDataOrOffset(VList lst) {
+            long pos = ms_l_ia.Position;
+            bw_l_ia.Write((uint)lst.Get().Count);
+            foreach (VComponent cpnt in lst.Get()) {
+                if (cpnt is VInListStruct) {
+                    bw_l_ia.Write(l_sa.IndexOf(d_sa_s[(VInListStruct)cpnt]));
+                } else {
+                    throw new CompositeException(GError.ADD_WRONG_STRUCTURE_CLASS_TO_LIST);
+                }
+            }
+            return (uint)pos;
+        }
+        private uint GetFieldDataOrOffset(VField f) {
+            if (VComponent.IsSimple(f.Type)) {
+                return BitConverter.ToUInt32(f.FieldData.DataBuffer, 0);
+            } else {
+                long pos = ms_f_db.Position;
+                switch (f.Type) {
+                    case VType.RESREF:
+                        bw_f_db.Write((byte)f.FieldData.DataBuffer.Length);
+                        break;
+                    case VType.CEXOSTRING:
+                    case VType.CEXOLOCSTRING:
+                    case VType.VOID:
+                        bw_f_db.Write((uint)f.FieldData.DataBuffer.Length);
+                        break;
+                }
+                bw_f_db.Write(f.FieldData.DataBuffer);
+                return (uint)pos;
+            }
+        }
 
+        private void CreateFrames(VComponent cpnt) {
+            if (cpnt is VStruct) {
+                GStructFrame sf = new GStructFrame();
+                l_sa.Add(sf);
+                d_sa_s.Add(sf, (VStruct)cpnt);
+            }
+            if (!(cpnt is VInListStruct || cpnt is VRootStruct)) {
+                GFieldFrame ff = new GFieldFrame();
+                l_fa.Add(ff);
+                d_fa_f.Add(ff, cpnt);
+            }
+            if (VComponent.IsComposite(cpnt.Type)) {
+                VComposite cpsit = (VComposite)cpnt;
+                foreach (VComponent child in cpsit.Get()) {
+                    CreateFrames(child);
+                }
+            }
+        }
         private void WriteData() {
             bw.Seek(GHeader.SIZE, SeekOrigin.Begin);
             WriteStructures();
@@ -632,7 +734,13 @@ namespace GFFLibrary.GFF {
             bw.Seek(0, SeekOrigin.Begin);
             WriteHeader();
         }
-
+        private void WriteStructures() {
+            h.StructOffset = (uint)bw.BaseStream.Position;
+            h.StructCount = (uint)l_sa.Count;
+            foreach (GStructFrame sf in l_sa) {
+                WriteFrame(sf);
+            }
+        }
         private void WriteListIndices() {
             h.ListIndicesOffset = (uint)bw.BaseStream.Position;
             h.ListIndicesCount = (uint)ms_l_ia.Length;
@@ -656,21 +764,10 @@ namespace GFFLibrary.GFF {
             }
         }
         private void WriteFields() {
-            List<int> keys = d_ff.Regular.Keys.ToList<int>();
-            keys.Sort();
             h.FieldOffset = (uint)bw.BaseStream.Position;
-            h.FieldCount = (uint)keys.Count;
-            foreach (int key in keys) {
-                WriteFrame(d_ff[key]);
-            }
-        }
-        private void WriteStructures() {
-            List<int> keys = d_sf.Regular.Keys.ToList<int>();
-            keys.Sort();
-            h.StructOffset = (uint)bw.BaseStream.Position;
-            h.StructCount = (uint)keys.Count;
-            foreach (int key in keys) {
-                WriteFrame(d_sf[key]);
+            h.FieldCount = (uint)l_fa.Count;
+            foreach (GFieldFrame f in l_fa) {
+                WriteFrame(f);
             }
         }
         private void WriteHeader() {
@@ -683,7 +780,6 @@ namespace GFFLibrary.GFF {
                 bw.Write((uint)value);
             }
         }
-
         private void WriteFrame(GBasicFrame frm) {
             int i = 0;
             while (i < GBasicFrame.VALUE_COUNT) {
@@ -691,128 +787,5 @@ namespace GFFLibrary.GFF {
             }
         }
 
-        private struct AnalyseDatas {
-            public uint FType, FLabelIndex, FDataOrOffset,
-                SType, SDataOrOffset, SFieldCount, SIndex, FIndex;
-        }
-        private void Analyse(VComponent cpnt) {
-            AnalyseLabel(cpnt.Label);
-            AnalyseDatas adat = CreateAnalyseDatas(cpnt);
-            if (cpnt is VStruct) {
-                d_sf.Add((int)adat.SIndex, new GStructFrame(adat.SType, adat.SDataOrOffset, adat.SFieldCount));
-            }
-            if (!(cpnt is VListedStruct) && !(cpnt is VRoot)) {
-                d_ff.Add((int)adat.FIndex, new GFieldFrame(adat.FType, adat.FLabelIndex, adat.FDataOrOffset));
-            }
-
-            if (cpnt is VComposite) {
-                VComposite cpsit = (VComposite)cpnt;
-                foreach (VComponent child in cpsit.Get()) {
-                    Analyse(child);
-                }
-            }
-        }
-
-        private void AnalyseLabel(string lbl) {
-            if (lbl != null) {
-                if (!l_lbl.Contains(lbl)) {
-                    l_lbl.Add(lbl);
-                }
-            }
-        }
-
-        private uint GetLabelIndex(VComponent cpnt) {
-            if (l_lbl.Contains(cpnt.Label)) {
-                return (uint)l_lbl.IndexOf(cpnt.Label);
-            } else {
-                throw new ApplicationException("Le label n'est pas présent dans la liste.");
-            }
-        }
-
-        private AnalyseDatas CreateAnalyseDatas(VComponent cpnt) {
-            AnalyseDatas adat = new AnalyseDatas();
-            if (cpnt is VList) {
-                adat.FIndex = cpnt.Index;
-                adat.FLabelIndex = GetLabelIndex(cpnt);
-                adat.FType = (uint)cpnt.Type;
-                adat.FDataOrOffset = GetListDataOrOffset((VList)cpnt);
-            } else if (cpnt is VStruct) {
-                if (cpnt is VNormalStruct) {
-                    VNormalStruct s = (VNormalStruct)cpnt;
-                    adat.FIndex = s.FieldFrameIndex;
-                    adat.SIndex = s.Index;
-                    adat.FType = (uint)s.Type;
-                    adat.SType = s.StructType;
-                    adat.FLabelIndex = GetLabelIndex(cpnt);
-                    adat.SFieldCount = (uint)s.Get().Count;
-                    adat.FDataOrOffset = s.Index;
-                    adat.SDataOrOffset = GetStructDataOrOffset(s);
-                } else if (cpnt is VListedStruct) {
-                    VListedStruct ls = (VListedStruct)cpnt;
-                    adat.SIndex = ls.Index;
-                    adat.SType = ls.StructType;
-                    adat.SDataOrOffset = GetStructDataOrOffset(ls);
-                    adat.SFieldCount = (uint)ls.Get().Count;
-                } else if (cpnt is VRoot) {
-                    VRoot rt = (VRoot)cpnt;
-                    adat.SIndex = VRoot.ROOT_INDEX;
-                    adat.SFieldCount = (uint)rt.Get().Count;
-                    adat.SType = VRoot.ROOT_TYPE;
-                    adat.SDataOrOffset = GetStructDataOrOffset(rt);
-                }
-            } else if (cpnt is VField) {
-                adat.FIndex = cpnt.Index;
-                adat.FLabelIndex = GetLabelIndex(cpnt);
-                adat.FType = (uint)cpnt.Type;
-                adat.FDataOrOffset = GetFieldDataOrOffset((VField)cpnt);
-            }
-
-            return adat;
-        }
-
-        private uint GetListDataOrOffset(VList lst) {
-            long pos = ms_l_ia.Position;
-            bw_l_ia.Write((uint)lst.Get().Count);
-            foreach (VComponent cpnt in lst.Get()) {
-                bw_l_ia.Write((uint)cpnt.Index);
-            }
-            return (uint)pos;
-        }
-        private uint GetFieldDataOrOffset(VField f) {
-            if (VComponent.IsSimple(f.Type)) {
-                return BitConverter.ToUInt32( f.FieldData.DataBuffer, 0);
-            } else {
-                long pos = ms_f_db.Position;
-                switch (f.Type) {
-                    case VType.RESREF:
-                        bw_f_db.Write((byte)f.FieldData.DataBuffer.Length);
-                        break;
-                    case VType.CEXOSTRING:
-                    case VType.CEXOLOCSTRING:
-                    case VType.VOID:
-                        bw_f_db.Write((uint)f.FieldData.DataBuffer.Length);
-                        break;
-                }
-                bw_f_db.Write(f.FieldData.DataBuffer);
-                return (uint)pos;
-            }
-        }
-        private uint GetStructDataOrOffset(VStruct s) {
-            if (s.Get().Count == 0) {
-                return uint.MaxValue;
-            } else if (s.Get().Count == 1) {
-                return (uint)s.Get()[0].Index;
-            } else {
-                long pos = ms_f_ia.Position;
-                foreach (VComponent cpnt in s.Get()) {
-                    if (cpnt is VNormalStruct) {
-                        bw_f_ia.Write((uint)((VNormalStruct)cpnt).FieldFrameIndex);
-                    } else {
-                        bw_f_ia.Write((uint)cpnt.Index);
-                    }
-                }
-                return (uint)pos;
-            }
-        }
     }
 }
