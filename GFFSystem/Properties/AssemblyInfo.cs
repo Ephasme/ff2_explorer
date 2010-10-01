@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Les informations générales relatives à un assembly dépendent de 
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("GFFLibrary")]
+[assembly: AssemblyTitle("GFFSystem")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Aucune")]
-[assembly: AssemblyProduct("GFFLibrary")]
+[assembly: AssemblyProduct("GFFSystem")]
 [assembly: AssemblyCopyright("Copyright © Aucune 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Le GUID suivant est pour l'ID de la typelib si ce projet est exposé à COM
-[assembly: Guid("0f37e7be-2119-4aee-bb54-af92e085ff8b")]
+[assembly: Guid("6d46f8f0-b18c-435d-83bd-bf54a6e8f8b0")]
 
 // Les informations de version pour un assembly se composent des quatre valeurs suivantes :
 //

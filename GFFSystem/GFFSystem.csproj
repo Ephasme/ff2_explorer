@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{314BEBC3-43B8-4BBE-BB81-8746B8E2328E}</ProjectGuid>
+    <ProjectGuid>{AD42E5F6-CFE5-45E1-8396-23196E8AD53F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GFFLibrary</RootNamespace>
-    <AssemblyName>GFFLibrary</AssemblyName>
+    <RootNamespace>GFFSystem</RootNamespace>
+    <AssemblyName>GFFSystem</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -45,16 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Virtual.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="GFF.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools.cs" />
+    <Compile Include="Virtual.cs" />
     <Compile Include="XML.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="diagrames\GFFStructure.cd" />
-    <None Include="diagrames\VirtualStructure.cd" />
-    <None Include="diagrames\XMLStructure.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using GFFLibrary.GFF;
-using Tools;
+using GFFSystem.Exception;
 
-namespace GFFLibrary.Virtual {
+namespace GFFSystem.Virtual {
     public enum VType : uint {
         BYTE, CHAR, WORD, SHORT, DWORD, INT, DWORD64, INT64,
         FLOAT, DOUBLE, CEXOSTRING, RESREF, CEXOLOCSTRING,
         VOID, STRUCT, LIST, INVALID = 4294967295
     }
-
     public class VFieldData {
         private MemoryStream ms_raw_dt;
         public string ToHexaString() {
@@ -37,7 +35,6 @@ namespace GFFLibrary.Virtual {
     }
     
     public abstract class VComponent {
-        public uint Index { get; set; }
         public string Label { get; set; }
         public VComposite Owner { get; set; }
         public VType Type { get; private set; }
@@ -77,85 +74,69 @@ namespace GFFLibrary.Virtual {
                 return (Owner == null);
             }
         }
-        public VComponent(string label, VType type, uint index) {
+        public VComponent(string label, VType type) {
             Owner = null;
             Label = label;
             Type = type;
-            Index = index;
         }
     }
+    
     public sealed class VField : VComponent {
         public VFieldData FieldData { get; set; }
-        public VField(string label, VType type, VFieldData vfd, uint index)
-            : base(label, type, index) {
+        public VField(string label, VType type, VFieldData vfd)
+            : base(label, type) {
             FieldData = vfd;
         }
     }
-
+    
     public abstract class VComposite : VComponent {
-        
-        public class HierarchyEventArgs : EventArgs {
-            public HierarchyEventArgs()
-                : base() {
-            }
-        }
-        public delegate void HierarchyEventHandler(object sender, HierarchyEventArgs ev);
-        public event HierarchyEventHandler ComponentAdded;
-
         private List<VComponent> childs;
+
         public virtual void Add(VComponent field) {
-            if (field is VRoot) {
-                throw new ApplicationException("Tentative d'ajout de la racine à un composant composite.");
+            if (field is VRootStruct) {
+                throw new CompositeException(GError.ADD_ROOT_TO_SOMETHING);
             } else {
                 childs.Add(field);
                 field.Owner = this;
             }
-            if (ComponentAdded != null) ComponentAdded(this, new HierarchyEventArgs());
         }
         public List<VComponent> Get() {
             return childs;
         }
-        public VComposite(string label, VType type, uint index)
-            : base(label, type, index) {
+        public VComposite(string label, VType type)
+            : base(label, type) {
             childs = new List<VComponent>();
         }
     }
 
     public abstract class VStruct : VComposite {
         public uint StructType { set; get; }
-        public VStruct(string label, uint index, uint type)
-            : base(label, VType.STRUCT, index) {
+        public VStruct(string label, uint type)
+            : base(label, VType.STRUCT) {
             StructType = type;
         }
     }
-    public sealed class VNormalStruct : VStruct {
-        public uint FieldFrameIndex { set; get; }
-        public VNormalStruct(string label, uint field_frame_index, uint struct_frame_index, uint struct_type)
-            : base(label, struct_frame_index, struct_type) {
-            FieldFrameIndex = field_frame_index;
-        }
+
+    public class VInFieldStruct : VStruct {
+        public VInFieldStruct(string label, uint type) : base(label, type) { }
     }
-    public sealed class VListedStruct : VStruct {
-        public VListedStruct(uint index, uint type)
-            : base(null, index, type) {
-        }
+    public sealed class VInListStruct : VInFieldStruct {
+        public VInListStruct(uint type) : base(null, type) { }
     }
-    public sealed class VRoot : VStruct {
-        public const int ROOT_INDEX = 0;
+    public sealed class VRootStruct : VInFieldStruct {
+        public const uint ROOT_INDEX = 0;
         public const uint ROOT_TYPE = uint.MaxValue;
-        public VRoot()
-            : base(null, ROOT_INDEX, ROOT_TYPE) {
-        }
+        public VRootStruct() : base(null, ROOT_TYPE) { }
     }
 
     public sealed class VList : VComposite {
         public override void Add(VComponent field) {
-            if (field is VStruct) {
+            if (field is VInListStruct) {
                 base.Add(field);
             } else {
-                throw new ApplicationException("Tentative d'ajout d'autre chose qu'une structure à une liste.");
+                throw new CompositeException(GError.ADD_WRONG_STRUCTURE_CLASS_TO_LIST);
             }
         }
-        public VList(string label, uint index) : base(label, VType.LIST, index) { }
+        public VList(string label) : base(label, VType.LIST) { }
     }
 }
