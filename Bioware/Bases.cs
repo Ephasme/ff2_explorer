@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System;
-using Bioware.Tools;
-
 namespace Bioware {
     public class ResRef {
         public const int LENGTH = 16;
@@ -100,7 +98,7 @@ namespace Bioware {
     public class BinaryReader : System.IO.BinaryReader {
         public Stream Stream { set; get; }
         public BinaryReader(Stream stream)
-            : base(stream, Encoding.GetEncoding(Constant.ENCODING_NAME)) {
+            : base(stream, LatinEncoding.LATIN1) {
             Stream = stream;
         }
         public Queue<uint> GetUInt32Queue(int count) {
@@ -134,12 +132,12 @@ namespace Bioware {
     }
     public class BinaryWriter : System.IO.BinaryWriter {
         public BinaryWriter(Stream stream)
-            : base(stream, Encoding.GetEncoding(Constant.ENCODING_NAME)) {
+            : base(stream, LatinEncoding.LATIN1) {
         }
     }
-    public static class Constant {
-        public const string ENCODING_NAME = "ISO-8859-1";
-        public const int RESREF_LENGTH = 16;
+    public static class LatinEncoding {
+        public const string NAME = "ISO-8859-1";
+        public static Encoding LATIN1 = Encoding.GetEncoding(NAME);
     }
     public enum Gender : uint {
         Male = 0, None = 0, Female = 1

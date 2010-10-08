@@ -47,6 +47,9 @@
   <ItemGroup>
     <Compile Include="Bases.cs" />
     <Compile Include="GFF\Exceptions.cs" />
+    <Compile Include="GFF\ListAndStruct.cs" />
+    <Compile Include="GFF\Fields.cs" />
+    <Compile Include="GFF\Frames.cs" />
     <Compile Include="GFF\System.cs" />
     <Compile Include="NWN\Module.cs" />
     <Compile Include="Resources\Resources.cs" />

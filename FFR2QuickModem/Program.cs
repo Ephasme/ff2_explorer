@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using System.IO;
+using System;
 using Bioware.GFF;
 using Bioware.GFF.XML;
-
 namespace FFR2QuickModem {
 
     class QuickModem {

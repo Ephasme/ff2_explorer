@@ -1,9 +1,12 @@
-﻿using Bioware.GFF.XML.Exception;
-using Bioware.Tools;
-using Bioware.GFF.Exception;
-using System.Xml;
+﻿using System;
 using System.IO;
-using System;
+using System.Xml;
+using Bioware.GFF.Composite;
+using Bioware.GFF.Exception;
+using Bioware.GFF.Field;
+using Bioware.GFF.List;
+using Bioware.GFF.Struct;
+using Bioware.GFF.XML.Exception;
 
 namespace Bioware.GFF.XML {
     public class GXmlDocument {
@@ -25,7 +28,7 @@ namespace Bioware.GFF.XML {
             xwrite.Save(root, path);
         }
     }
-    class GXmlReader : GXmlHandler {
+    class GXmlReader : GXmlBase {
 
         public GRootStruct RootStruct { get; private set; }
 
@@ -77,9 +80,6 @@ namespace Bioware.GFF.XML {
                 throw new FileException(Bioware.GFF.XML.Exception.Error.CAN_NOT_GET_FIELD_TYPE);
             }
         }
-        GFieldData GetFieldData(XmlNode node) {
-            return new GFieldData(HexaManip.StringToByteArray(node.InnerText));
-        }
         GComponent CreateComponent(XmlNode node) {
             GComponent cpnt = null;
             switch (node.Name) {
@@ -100,7 +100,7 @@ namespace Bioware.GFF.XML {
                     cpnt = new GList(GetLabel(node));
                     break;
                 case E_FIELD:
-                    cpnt = new GField(GetLabel(node), GetFieldType(node), GetFieldData(node));
+                    cpnt = new GField(GetLabel(node), GetFieldType(node), GetFieldValue(node));
                     break;
             }
             if (cpnt is GComposite) {
@@ -112,6 +112,10 @@ namespace Bioware.GFF.XML {
             return cpnt;
         }
 
+        private string GetFieldValue(XmlNode node) {
+            return node.InnerText;
+        }
+
         private string GetExtention(XmlNode node) {
             if (node.Attributes[A_EXTENTION] != null) {
                 return node.Attributes[A_EXTENTION].Value;
@@ -121,7 +125,7 @@ namespace Bioware.GFF.XML {
 
         }
     }
-    class GXmlWriter : GXmlHandler {
+    class GXmlWriter : GXmlBase {
 
         GRootStruct RootStruct;
 
@@ -137,7 +141,7 @@ namespace Bioware.GFF.XML {
             } else {
                 fs = new FileStream(path, FileMode.Create);
             }
-            xdoc.AppendChild(xdoc.CreateXmlDeclaration("1.0", Constant.ENCODING_NAME, "yes"));
+            xdoc.AppendChild(xdoc.CreateXmlDeclaration("1.0", LatinEncoding.NAME, "yes"));
             Write(xdoc, RootStruct);
             xdoc.Save(fs);
             fs.Close();
@@ -179,7 +183,7 @@ namespace Bioware.GFF.XML {
         void WriteField(XmlElement n, GComponent c) {
             GField fld = (GField)c;
             n.SetAttribute(A_TYPE, Enum.GetName(typeof(GType), fld.Type));
-            string data = fld.FieldData.ToHexaString();
+            string data = fld.Value;
             if (data != String.Empty) {
                 n.AppendChild(xdoc.CreateTextNode(data));
             }
@@ -190,7 +194,7 @@ namespace Bioware.GFF.XML {
             }
         }
     }
-    class GXmlHandler {
+    class GXmlBase {
         public const string EXT = ".xml";
         public const string E_STRUCT = "struct";
         public const string E_LIST = "list";
@@ -204,8 +208,7 @@ namespace Bioware.GFF.XML {
         protected void Initialize() {
             xdoc = new XmlDocument();
         }
-        public GXmlHandler() {
+        public GXmlBase() {
         }
-
     }
 }
