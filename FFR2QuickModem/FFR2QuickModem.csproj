@@ -56,9 +56,9 @@
     <Content Include="Resources\FFR2QuickModem.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GFFSystem\GFFSystem.csproj">
-      <Project>{AD42E5F6-CFE5-45E1-8396-23196E8AD53F}</Project>
-      <Name>GFFSystem</Name>
+    <ProjectReference Include="..\Bioware\Bioware.csproj">
+      <Project>{FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA}</Project>
+      <Name>Bioware</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
