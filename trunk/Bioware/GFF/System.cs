@@ -1,49 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
+using Bioware.GFF.Composite;
 using Bioware.GFF.Exception;
+using Bioware.GFF.Field;
+using Bioware.GFF.List;
+using Bioware.GFF.Struct;
 using Bioware.Tools;
-using Bioware.GFF.XML;
 
-namespace Bioware.GFF {
-    public enum GType : uint {
-        BYTE, CHAR, WORD, SHORT, DWORD, INT, DWORD64, INT64,
-        FLOAT, DOUBLE, CEXOSTRING, RESREF, CEXOLOCSTRING,
-        VOID, STRUCT, LIST, INVALID = 4294967295
-    }
-    public static class GConst {
-        public const string VERSION = "V3.2";
-        public const char LABEL_PADDING_CHARACTER = '\0';
-        public const int LABEL_LENGTH = 16;
-    }
-
-    public class GFieldData {
-        private MemoryStream ms_raw_dt;
-        public string ToHexaString() {
-            return HexaManip.ByteArrayToString(DataBuffer);
-        }
-        public GFieldData(byte[] datas) {
-            ms_raw_dt = new MemoryStream(datas);
-        }
-        public byte[] DataBuffer {
-            get {
-                return ms_raw_dt.ToArray();
-            }
-            set {
-                ms_raw_dt = new MemoryStream(value);
-            }
-        }
-    }
-    public class GField : GComponent {
-        public GFieldData FieldData { get; set; }
-        public GField(string label, GType type, GFieldData vfd)
-            : base(label, type) {
-            FieldData = vfd;
-        }
-    }
-
+namespace Bioware.GFF.Composite {
     public abstract class GComponent {
         public string Label { get; set; }
         public GComposite Owner { get; set; }
@@ -150,110 +115,55 @@ namespace Bioware.GFF {
             }
         }
     }
-
-    public abstract class GStruct : GComposite {
-        public uint StructType { set; get; }
-        public GStruct(string label, uint type)
-            : base(label, GType.STRUCT) {
-            StructType = type;
-        }
+}
+namespace Bioware.GFF {
+    public enum GType : uint {
+        BYTE, CHAR, WORD, SHORT, DWORD, INT, DWORD64, INT64,
+        FLOAT, DOUBLE, CEXOSTRING, RESREF, CEXOLOCSTRING,
+        VOID, STRUCT, LIST, INVALID = 4294967295
     }
-    public class GInFieldStruct : GStruct {
-        public GInFieldStruct(string label, uint type) : base(label, type) { }
-    }
-    public class GInListStruct : GInFieldStruct {
-        public GInListStruct(uint type) : base(null, type) { }
-    }
-    public class GRootStruct : GInFieldStruct {
-
-        public const uint ROOT_INDEX = 0;
-        public const uint ROOT_TYPE = uint.MaxValue;
-        public string Extention { get; set; }
-        public GRootStruct(string ext)
-            : base(null, ROOT_TYPE) {
-            Extention = ext;
-        }
+    public static class GConst {
+        public const string VERSION = "V3.2";
+        public const char LABEL_PADDING_CHARACTER = '\0';
+        public const int LABEL_LENGTH = 16;
     }
 
-    public class GList : GComposite {
-        public override void Add(GComponent field) {
-            if (field is GInListStruct) {
-                base.Add(field);
-            } else {
-                throw new CompositeException(Error.ADD_WRONG_STRUCTURE_CLASS_TO_LIST);
-            }
+    public class GDocument {
+        GBase gb;
+        GWriter wr;
+        GReader rd;
+        public GDocument(string path)
+            : this() {
+            rd.Load(path);
         }
-        public GList(string label) : base(label, GType.LIST) { }
-    }
-
-    abstract class GBasicFrame {
-        public const int TYPE = 0;
-        public const int VALUE_COUNT = 3;
-        public const int SIZE = VALUE_COUNT * sizeof(uint);
-        public uint Type {
-            get {
-                return Datas[TYPE];
-            }
-            set {
-                Datas[TYPE] = value;
-            }
+        public GDocument(Stream stream)
+            : this() {
+            rd.Load(stream);
         }
-        public uint[] Datas { get; set; }
-        public GBasicFrame() {
-            Datas = new uint[VALUE_COUNT];
+        public GDocument() {
+            gb = new GBase();
+            wr = new GWriter(gb);
+            rd = new GReader(gb);
         }
-    }
-    class GFieldFrame : GBasicFrame {
-        public const int LABEL_INDEX = 1;
-        public const int DATA_OR_DATA_OFFSET = 2;
-        public uint LabelIndex {
-            get {
-                return Datas[LABEL_INDEX];
-            }
-            set {
-                Datas[LABEL_INDEX] = value;
-            }
+        public void Save(GRootStruct root, string path) {
+            wr.Save(root, path);
         }
-        public uint DataOrDataOffset {
-            get {
-                return Datas[DATA_OR_DATA_OFFSET];
-            }
-            set {
-                Datas[DATA_OR_DATA_OFFSET] = value;
-            }
+        public Stream Save(GRootStruct root) {
+            return wr.Save(root);
         }
-        public GFieldFrame(uint Type, uint LabelIndex, uint DataOrDataOffset) {
-            this.Type = Type;
-            this.LabelIndex = LabelIndex;
-            this.DataOrDataOffset = DataOrDataOffset;
+        public void Save(string path) {
+            wr.Save(rd.RootStruct, path);
         }
-        public GFieldFrame() : this(0, 0, 0) { }
-    }
-    class GStructFrame : GBasicFrame {
-        public const int DATA_OR_DATA_OFFSET = 1;
-        public const int FIELD_COUNT = 2;
-        public uint FieldCount {
-            get {
-                return Datas[FIELD_COUNT];
-            }
-            set {
-                Datas[FIELD_COUNT] = value;
-            }
+        public Stream Save() {
+            return wr.Save(rd.RootStruct);
         }
-        public uint DataOrDataOffset {
-            get {
-                return Datas[DATA_OR_DATA_OFFSET];
-            }
-            set {
-                Datas[DATA_OR_DATA_OFFSET] = value;
-            }
+        public void Load(string path) {
+            rd.Load(path);
         }
-        public GStructFrame(uint Type, uint DataOrDataOffset, uint FieldCount) {
-            this.Type = Type;
-            this.FieldCount = FieldCount;
-            this.DataOrDataOffset = DataOrDataOffset;
+        public void Load(Stream stream) {
+            rd.Load(stream);
         }
-        public GStructFrame() : this(0, 0, 0) { }
+        public GRootStruct RootStruct { get { return rd.RootStruct; } }
     }
 
     class GFactory {
@@ -300,9 +210,9 @@ namespace Bioware.GFF {
                     throw new CompositeException(Error.UNKNOWN_COMPOSITE_TYPE);
                 }
             } else {
-                GFieldData f_dat;
+                MemoryStream data_stream;
                 if (GComponent.IsSimple(f_type)) {
-                    f_dat = new GFieldData(BitConverter.GetBytes(f.DataOrDataOffset));
+                    data_stream = new MemoryStream(BitConverter.GetBytes(f.DataOrDataOffset));
                 } else if (GComponent.IsLarge(f_type)) {
                     BinaryReader br = new BinaryReader(gbase.FieldDataBlock);
                     long pos = br.Stream.Position;
@@ -331,12 +241,12 @@ namespace Bioware.GFF {
                             throw new FieldException(Error.UNKNOWN_LARGE_FIELD_TYPE);
                     }
                     #endregion
-                    f_dat = new GFieldData(br.ReadBytes(size));
+                    data_stream = new MemoryStream(br.ReadBytes(size));
                     br.Stream.Position = pos;
                 } else {
                     throw new FieldException(Error.UNKNOWN_FIELD_TYPE);
                 }
-                return new GField(f_lbl, f_type, f_dat);
+                return new GField(f_lbl, f_type, data_stream.ToArray());
             }
             throw new ComponentException(Error.UNKNOWN_COMPONENT_TYPE);
         }
@@ -591,45 +501,6 @@ namespace Bioware.GFF {
             ListIndicesArray = new MemoryStream();
         }
     }
-
-    public class GDocument {
-        GBase gb;
-        GWriter wr;
-        GReader rd;
-        public GDocument(string path)
-            : this() {
-            rd.Load(path);
-        }
-        public GDocument(Stream stream)
-            : this() {
-            rd.Load(stream);
-        }
-        public GDocument() {
-            gb = new GBase();
-            wr = new GWriter(gb);
-            rd = new GReader(gb);
-        }
-        public void Save(GRootStruct root, string path) {
-            wr.Save(root, path);
-        }
-        public Stream Save(GRootStruct root) {
-            return wr.Save(root);
-        }
-        public void Save(string path) {
-            wr.Save(rd.RootStruct, path);
-        }
-        public Stream Save() {
-            return wr.Save(rd.RootStruct);
-        }
-        public void Load(string path) {
-            rd.Load(path);
-        }
-        public void Load(Stream stream) {
-            rd.Load(stream);
-        }
-        public GRootStruct RootStruct { get { return rd.RootStruct; } }
-    }
-
     class GReader {
         GFactory fac;
         BinaryReader br;
@@ -807,21 +678,21 @@ namespace Bioware.GFF {
         }
         private uint GetFieldDataOrOffset(GField f) {
             if (GComponent.IsSimple(f.Type)) {
-                return BitConverter.ToUInt32(f.FieldData.DataBuffer, 0);
+                return BitConverter.ToUInt32(f.Bytes, 0);
             } else {
                 BinaryWriter br = new BinaryWriter(gb.FieldDataBlock);
                 long pos = gb.FieldDataBlock.Position;
                 switch (f.Type) {
                     case GType.RESREF:
-                        br.Write((byte)f.FieldData.DataBuffer.Length);
+                        br.Write((byte)f.Bytes.Length);
                         break;
                     case GType.CEXOSTRING:
                     case GType.CEXOLOCSTRING:
                     case GType.VOID:
-                        br.Write((uint)f.FieldData.DataBuffer.Length);
+                        br.Write((uint)f.Bytes.Length);
                         break;
                 }
-                br.Write(f.FieldData.DataBuffer);
+                br.Write(f.Bytes);
                 return (uint)pos;
             }
         }
@@ -906,10 +777,6 @@ namespace Bioware.GFF {
             while (i < GBasicFrame.VALUE_COUNT) {
                 bw.Write((uint)frm.Datas[i++]);
             }
-        }
-
-        internal void GetStream(GRootStruct gRootStruct) {
-            throw new NotImplementedException();
         }
     }
 }

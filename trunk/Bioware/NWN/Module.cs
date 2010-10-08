@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Bioware.Resources;
+﻿using Bioware.Resources;
 using System.IO;
 using Bioware.GFF;
-
 namespace Bioware.NWN {
     public class Module {
         ResourceManager rm;
