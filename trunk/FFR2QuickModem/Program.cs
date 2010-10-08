@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using GFFSystem.GFF;
-using GFFSystem.Virtual;
-using GFFSystem.XML;
+using Bioware.GFF;
+using Bioware.GFF.XML;
 
 namespace FFR2QuickModem {
 
@@ -39,12 +38,6 @@ namespace FFR2QuickModem {
         public string ModemPath { get; set; }
         public bool Again { get; set; }
 
-        GFileReader grd;
-        GFileWriter gwr;
-        XFileWriter xwr;
-        XFileReader xrd;
-        VRootStruct root;
-
         public QuickModem() {
             Initialize();
         }
@@ -64,11 +57,6 @@ namespace FFR2QuickModem {
                 Again = false;
             }
 #endif
-            grd = new GFileReader();
-            gwr = new GFileWriter();
-            xwr = new XFileWriter();
-            xrd = new XFileReader();
-            root = new VRootStruct();
         }
 
         public void WriteHeader() {
@@ -88,9 +76,8 @@ namespace FFR2QuickModem {
             Console.WriteLine();
         }
 
-        public delegate bool CopyChoiceMethod(FileInfo file);
+        public delegate bool DoActionMethod(FileInfo file);
         public delegate void ActionMethod(FileInfo file);
-
 
         internal void Start() {
             while (Again) {
@@ -114,7 +101,7 @@ namespace FFR2QuickModem {
                 }
             }
         }
-        public void DoOnFiles(string path, string copy_path, CopyChoiceMethod copyMethod, ActionMethod actionMethod) {
+        public void DoOnFiles(string path, string copy_path, DoActionMethod doAction, ActionMethod actionMethod) {
             if (Directory.Exists(path)) {
                 string[] l_sfi = Directory.GetFiles(path);
                 int cent = 0;
@@ -124,7 +111,7 @@ namespace FFR2QuickModem {
                         Console.Write(".");
                     }
                     FileInfo fi = new FileInfo(l_sfi[i]);
-                    if (copyMethod(fi)) {
+                    if (doAction(fi)) {
                         actionMethod(fi);
                     } else {
                         File.Copy(fi.FullName, ModemPath + copy_path + fi.Name, true);
@@ -143,16 +130,15 @@ namespace FFR2QuickModem {
 
         private void ModelFile(FileInfo fi) {
             string path = ModemPath + XML_DIR + fi.Name + XML_EXT;
-            grd.Load(fi.FullName);
-            root = grd.RootStruct;
-            xwr.Save(root, path);
+            GDocument gdoc = new GDocument(fi.FullName);
+            GXmlDocument xdoc = new GXmlDocument();
+            xdoc.Save(gdoc.RootStruct, path);
         }
         private void DemodFile(FileInfo fi) {
             string sname = fi.Name.Remove(fi.Name.Length - 4);
-            string sext = Path.GetExtension(sname);
-            xrd.Load(fi.FullName);
-            root = xrd.RootStruct;
-            gwr.Save(root, sext, ModemPath + GFF_DIR + sname);
+            GXmlDocument xdoc = new GXmlDocument(fi.FullName);
+            GDocument gdoc = new GDocument();
+            gdoc.Save(xdoc.RootStruct, ModemPath + GFF_DIR + sname);
         }
 
         private void SetToClose() {
