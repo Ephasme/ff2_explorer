@@ -15,14 +15,37 @@ namespace Bioware.GFF.Field {
             return HexaManip.ByteArrayToString(this.ToArray());
         }
     }
-    interface IValueReader {
+
+    public interface IValueReader {
         void Parse(string value);
         void Parse(GField field);
         string TextValue { get; }
         byte[] ByteArray { get; }
     }
-    
-    class GExoLocStringReader : IValueReader {
+
+    public class GByteReader : IValueReader {
+        byte value;
+        public void Parse(string value) {
+            this.value = byte.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            this.value = field.Bytes[0];
+        }
+
+        public string TextValue {
+            get { return value.ToString(); }
+        }
+
+        public byte[] ByteArray {
+
+            get {
+                byte[] res = new byte[] { value };
+                return res;
+            }
+        }
+    }
+    public class GExoLocStringReader : IValueReader {
         Dictionary<int, string> dic;
         int strref;
         public void Parse(string value) {
@@ -83,7 +106,7 @@ namespace Bioware.GFF.Field {
             return p.Replace("&DBLBAR&", "||").Replace("&EGAL&", "=");
         }
     }
-    class GExoStringReader : IValueReader {
+    public class GExoStringReader : IValueReader {
         public GExoStringReader() { }
         string value;
         public void Parse(string value) {
@@ -102,7 +125,157 @@ namespace Bioware.GFF.Field {
             get { return LatinEncoding.LATIN1.GetBytes(value); }
         }
     }
-    class GResRefReader : IValueReader {
+    public class GCharReader : IValueReader {
+        #region IValueReader Membres
+        char c;
+        public void Parse(string value) {
+            c = value.ToCharArray()[0];
+        }
+
+        public void Parse(GField field) {
+            c = LatinEncoding.LATIN1.GetChars(field.Bytes)[0];
+        }
+
+        public string TextValue {
+            get {
+                char[] l = { c };
+                return new string(l);
+            }
+        }
+
+        public byte[] ByteArray {
+            get { return LatinEncoding.LATIN1.GetBytes(TextValue); }
+        }
+
+        #endregion
+    }
+    public class GDoubleReader : IValueReader {
+        #region IValueReader Membres
+        double d;
+        public void Parse(string value) {
+            d = double.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            d = BitConverter.ToDouble(field.Bytes, 0);
+        }
+
+        public string TextValue {
+            get { return d.ToString(); }
+        }
+
+        public byte[] ByteArray {
+            get { return BitConverter.GetBytes(d); }
+        }
+
+        #endregion
+    }
+    public class GDwordReader : IValueReader {
+        #region IValueReader Membres
+        uint dword;
+        public void Parse(string value) {
+            dword = uint.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            dword = BitConverter.ToUInt32(field.Bytes, 0);
+        }
+
+        public string TextValue {
+            get { return dword.ToString(); }
+        }
+
+        public byte[] ByteArray {
+            get { return BitConverter.GetBytes(dword); }
+        }
+
+        #endregion
+    }
+    public class GDword64Reader : IValueReader {
+        #region IValueReader Membres
+        ulong d64;
+        public void Parse(string value) {
+            d64 = ulong.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            d64 = BitConverter.ToUInt64(field.Bytes, 0);
+        }
+
+        public string TextValue {
+            get { return d64.ToString(); }
+        }
+
+        public byte[] ByteArray {
+            get { return BitConverter.GetBytes(d64); }
+        }
+
+        #endregion
+    }
+    public class GFloatReader : IValueReader {
+        #region IValueReader Membres
+        float f;
+        public void Parse(string value) {
+            f = float.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            f = BitConverter.ToSingle(field.Bytes, 0);
+        }
+
+        public string TextValue {
+            get { return f.ToString(); }
+        }
+
+        public byte[] ByteArray {
+            get { return BitConverter.GetBytes(f); }
+        }
+
+        #endregion
+    }
+    public class GIntReader : IValueReader {
+        #region IValueReader Membres
+        int i;
+        public void Parse(string value) {
+            i = int.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            i = BitConverter.ToInt32(field.Bytes, 0);
+        }
+
+        public string TextValue {
+            get { return i.ToString(); }
+        }
+
+        public byte[] ByteArray {
+            get { return BitConverter.GetBytes(i); }
+        }
+
+        #endregion
+    }
+    public class GInt64Reader : IValueReader {
+        #region IValueReader Membres
+        long i64;
+        public void Parse(string value) {
+            i64 = long.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            i64 = BitConverter.ToInt64(field.Bytes, 0);
+        }
+
+        public string TextValue {
+            get { return i64.ToString(); }
+        }
+
+        public byte[] ByteArray {
+            get { return BitConverter.GetBytes(i64); }
+        }
+
+        #endregion
+    }
+    public class GResRefReader : IValueReader {
         ResRef resref;
         public void Parse(string value) {
             resref = new ResRef(value);
@@ -120,6 +293,50 @@ namespace Bioware.GFF.Field {
             get { return LatinEncoding.LATIN1.GetBytes(resref.String); }
         }
     }
+    public class GShortReader : IValueReader {
+        #region IValueReader Membres
+        short sh;
+        public void Parse(string value) {
+            sh = short.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            sh = BitConverter.ToInt16(field.Bytes, 0);
+        }
+
+        public string TextValue {
+            get { return sh.ToString(); }
+        }
+
+        public byte[] ByteArray {
+            get { return BitConverter.GetBytes(sh); }
+        }
+
+        #endregion
+    }
+    public class GWordReader : IValueReader {
+        #region IValueReader Membres
+        ushort ush;
+        public void Parse(string value) {
+            ush = ushort.Parse(value);
+        }
+
+        public void Parse(GField field) {
+            ush = BitConverter.ToUInt16(field.Bytes, 0);
+        }
+
+        public string TextValue {
+            get { return ush.ToString(); }
+        }
+
+        public byte[] ByteArray {
+            get {
+                return BitConverter.GetBytes(ush);
+            }
+        }
+
+        #endregion
+    }
 
     public class GField : GComponent {
         IValueReader ValueReader;
@@ -133,14 +350,44 @@ namespace Bioware.GFF.Field {
             : base(label, type) {
             FieldData = gfd;
             switch (type) {
+                case GType.BYTE:
+                    ValueReader = new GByteReader();
+                    break;
                 case GType.CEXOLOCSTRING:
                     ValueReader = new GExoLocStringReader();
                     break;
                 case GType.CEXOSTRING:
                     ValueReader = new GExoStringReader();
                     break;
+                case GType.CHAR:
+                    ValueReader = new GCharReader();
+                    break;
+                case GType.DOUBLE:
+                    ValueReader = new GDoubleReader();
+                    break;
+                case GType.DWORD:
+                    ValueReader = new GDwordReader();
+                    break;
+                case GType.DWORD64:
+                    ValueReader = new GDword64Reader();
+                    break;
+                case GType.FLOAT:
+                    ValueReader = new GFloatReader();
+                    break;
+                case GType.INT:
+                    ValueReader = new GIntReader();
+                    break;
+                case GType.INT64:
+                    ValueReader = new GInt64Reader();
+                    break;
                 case GType.RESREF:
                     ValueReader = new GResRefReader();
+                    break;
+                case GType.SHORT:
+                    ValueReader = new GShortReader();
+                    break;
+                case GType.WORD:
+                    ValueReader = new GWordReader();
                     break;
                 default:
                     ValueReader = null;

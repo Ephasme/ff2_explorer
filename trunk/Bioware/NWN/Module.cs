@@ -1,9 +1,16 @@
 ﻿using Bioware.Resources;
 using System.IO;
 using Bioware.GFF;
+using Bioware.GFF.Composite;
+using Bioware.GFF.List;
+using System.Collections.Generic;
+using Bioware.GFF.Field;
+using Bioware.GFF.Struct;
+
 namespace Bioware.NWN {
     public class Module {
         ResourceManager rm;
+        GDocument mod_info;
         DirectoryInfo di_root, di_modules, di_override, di_hak;
         public Module(string root_path, string module_name) {
             Load(root_path, module_name);
@@ -23,7 +30,9 @@ namespace Bioware.NWN {
 
                 EFile mod = new EFile(di_modules.FullName + "/" + module_name);
 
-                GDocument mod_ifo = new GDocument(mod["module.ifo"].DataStream);
+                mod_info = new GDocument(mod["module.ifo"].DataStream);
+
+                GRootStruct root = mod_info.RootStruct;
 
                 rm.Add(di_modules.FullName + "/" + module_name);
             }

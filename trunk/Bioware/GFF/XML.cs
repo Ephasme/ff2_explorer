@@ -169,7 +169,7 @@ namespace Bioware.GFF.XML {
 
             if (v_child is GComposite) {
                 GComposite cv_child = (GComposite)v_child;
-                foreach (GComponent v_child2 in cv_child.GetAll()) {
+                foreach (GComponent v_child2 in cv_child) {
                     Write(x_child, v_child2);
                 }
             }
