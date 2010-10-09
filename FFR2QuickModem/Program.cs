@@ -2,11 +2,10 @@
 using System;
 using Bioware.GFF;
 using Bioware.GFF.XML;
+using System.Configuration;
 namespace FFR2QuickModem {
 
     class QuickModem {
-
-        public const string ERR_NO_DIRECTORY = "Erreur : l'application doit être placée dans un dossier contenant " + BASE_DIR + ".";
 
         public static string[] VALID_EXTENTION_LIST = { ".ifo", ".are", ".git", ".gic", ".utc", ".utd",
                                                         ".ute", ".uti", ".utp", ".uts", ".utm", ".utt",
@@ -16,48 +15,42 @@ namespace FFR2QuickModem {
         public const string CREATOR = "Peluso Loup-Stéphane";
         public const string VERSION = "1.0";
         public const string NAME = "FFR2QuickModem";
-#if DEBUG
-        public const string BASE_DIR = "ffr2_repository";
-#else
-        public const string BASE_DIR = "temp0";
-#endif
         public const string LIBRARY_NAME = "GFFLibrary.dll";
 
-        public const string XML_DIR = "/xml/";
-        public const string GFF_DIR = "/gff/";
         public const string XML_EXT = ".xml";
 
         public const char MODELISATION = 'M';
         public const char DEMODELISATION = 'D';
         public const char QUITTER = 'Q';
 
-        public string ModemPath { get; set; }
         public bool Again { get; set; }
 
         public QuickModem() {
             Initialize();
         }
 
+        string tempDirName, xmlDirName, repoDirName;
+
         private void Initialize() {
-#if DEBUG
-            ModemPath = "D:/NWN/modules/";
-            Console.WriteLine("ATTENTION ! Ceci est une version de Débogage.");
-            Again = true;
-#else
-            if (Directory.Exists("./" + BASE_DIR)) {
-                ModemPath = Path.GetFullPath("./");
-                Again = true;
-            } else {
-                Console.WriteLine(ERR_NO_DIRECTORY);
-                PushToContinue();
-                Again = false;
+            xmlDirName = ConfigurationManager.AppSettings["XmlDir"];
+            tempDirName = ConfigurationManager.AppSettings["TempDir"];
+            repoDirName = ConfigurationManager.AppSettings["RepoDir"];
+            if (Directory.Exists(repoDirName)) {
+                DirectoryInfo di_repo = new DirectoryInfo(repoDirName);
+                FileInfo[] l_repo_fi = di_repo.GetFiles();
+                if (!Directory.Exists(tempDirName)) {
+                    CreateDirectory(tempDirName);
+                    foreach (FileInfo fi in l_repo_fi) {
+                        fi.CopyTo(tempDirName + "/" + fi.Name);
+                    }
+                }
             }
-#endif
+            Again = true;
         }
 
         public void WriteHeader() {
             Console.Clear();
-            Console.WriteLine("Bienvenue sur " + NAME + " par " + CREATOR + " (c) 2010 (Version " + VERSION + ")\nLe chemin actuel est :\n" + ModemPath);
+            Console.WriteLine("Bienvenue sur " + NAME + " par " + CREATOR + " (c) 2010 (Version " + VERSION + ")");
             WriteSeparator();
             Console.WriteLine("Système de modélisation/démodélisation XML :\n" + MODELISATION + " : Modélisation GFF->XML\n" + DEMODELISATION + " : Démodélisation XML->GFF\n" + QUITTER + " : Quitter");
             WriteSeparator();
@@ -82,13 +75,13 @@ namespace FFR2QuickModem {
                 int result = Convert.ToChar(Console.Read());
                 switch (result) {
                     case MODELISATION:
-                        CreateDirectory(XML_DIR);
-                        DoOnFiles(ModemPath + BASE_DIR, XML_DIR, IsGFF, ModelFile);
+                        CreateDirectory(xmlDirName);
+                        DoOnFiles(tempDirName, xmlDirName, IsGFF, ModelFile);
                         PushToContinue();
                         break;
                     case DEMODELISATION:
-                        CreateDirectory(GFF_DIR);
-                        DoOnFiles(ModemPath + XML_DIR, GFF_DIR, IsXML, DemodFile);
+                        CreateDirectory(tempDirName);
+                        DoOnFiles(xmlDirName, tempDirName, IsXML, DemodFile);
                         PushToContinue();
                         break;
                     case QUITTER:
@@ -110,7 +103,7 @@ namespace FFR2QuickModem {
                     if (doAction(fi)) {
                         actionMethod(fi);
                     } else {
-                        File.Copy(fi.FullName, ModemPath + copy_path + fi.Name, true);
+                        File.Copy(fi.FullName, copy_path + "/" + fi.Name, true);
                     }
                 }
                 Console.Write("\n");
@@ -125,7 +118,7 @@ namespace FFR2QuickModem {
         }
 
         private void ModelFile(FileInfo fi) {
-            string path = ModemPath + XML_DIR + fi.Name + XML_EXT;
+            string path = xmlDirName + "/" + fi.Name + XML_EXT;
             GDocument gdoc = new GDocument(fi.FullName);
             GXmlDocument xdoc = new GXmlDocument();
             xdoc.Save(gdoc.RootStruct, path);
@@ -134,7 +127,7 @@ namespace FFR2QuickModem {
             string sname = fi.Name.Remove(fi.Name.Length - 4);
             GXmlDocument xdoc = new GXmlDocument(fi.FullName);
             GDocument gdoc = new GDocument();
-            gdoc.Save(xdoc.RootStruct, ModemPath + GFF_DIR + sname);
+            gdoc.Save(xdoc.RootStruct, tempDirName + "/" + sname);
         }
 
         private void SetToClose() {
@@ -146,9 +139,11 @@ namespace FFR2QuickModem {
             Console.WriteLine("Appuyez sur une touche pour continuer...");
             Console.ReadKey(false);
         }
-        private void CreateDirectory(string add) {
-            DirectoryInfo di = Directory.CreateDirectory(ModemPath + add);
-            Console.WriteLine("Création du répertoire : {0}", di.FullName);
+        private void CreateDirectory(string path) {
+            if (Directory.Exists(path)) {
+                Directory.Delete(path, true);
+            }
+            DirectoryInfo di = Directory.CreateDirectory(path);
         }
     }
 

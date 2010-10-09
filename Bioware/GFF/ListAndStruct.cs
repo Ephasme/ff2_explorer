@@ -16,7 +16,6 @@ namespace Bioware.GFF.Struct {
         public GInListStruct(uint type) : base(null, type) { }
     }
     public class GRootStruct : GInFieldStruct {
-
         public const uint ROOT_INDEX = 0;
         public const uint ROOT_TYPE = uint.MaxValue;
         public string Extention { get; set; }
@@ -28,7 +27,7 @@ namespace Bioware.GFF.Struct {
 }
 namespace Bioware.GFF.List {
     public class GList : GComposite {
-        public override void Add(GComponent field) {
+        public new void Add(GComponent field) {
             if (field is GInListStruct) {
                 base.Add(field);
             } else {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using Bioware.GFF.Composite;
@@ -7,6 +8,7 @@ using Bioware.GFF.Field;
 using Bioware.GFF.List;
 using Bioware.GFF.Struct;
 using Bioware.Tools;
+using System.Collections;
 
 namespace Bioware.GFF.Composite {
     public abstract class GComponent {
@@ -55,55 +57,27 @@ namespace Bioware.GFF.Composite {
             Type = type;
         }
     }
-    public abstract class GComposite : GComponent {
+    public abstract class GComposite : GComponent, IList<GComponent> {
         private List<GComponent> childs;
-        public GComponent First {
-            get {
-                return this[0];
-            }
-            set {
-                this[0] = value;
-            }
-        }
-        public GComponent Last {
-            get {
-                return this[childs.Count - 1];
-            }
-            set {
-                this[childs.Count - 1] = value;
-            }
-        }
-
-        public virtual void Add(GComponent field) {
-            if (field is GRootStruct) {
-                throw new CompositeException(Error.ADD_ROOT_TO_SOMETHING);
-            } else {
-                childs.Add(field);
-                field.Owner = this;
-            }
-        }
-        public List<GComponent> GetAll() {
-            return childs;
-        }
-        public List<GComponent> GetAll(string label) {
-            List<GComponent> res = new List<GComponent>();
-            foreach (GComponent c in childs) {
-                if (c.Label == label)
-                    res.Add(c);
-            }
-            return res;
-        }
-        public GComponent GetFirst(string label) {
-            foreach (GComponent c in childs) {
-                if (c.Label == label) {
-                    return c;
-                }
-            }
-            return null;
-        }
         public GComposite(string label, GType type)
             : base(label, type) {
             childs = new List<GComponent>();
+        }
+
+        #region IList<GComponent> Membres
+
+        public int IndexOf(GComponent item) {
+            return childs.IndexOf(item);
+        }
+
+        public void Insert(int index, GComponent item) {
+            childs.Insert(index, item);
+            item.Owner = this;
+        }
+
+        public void RemoveAt(int index) {
+            childs[index].Owner = null;
+            childs.RemoveAt(index);
         }
 
         public GComponent this[int index] {
@@ -114,6 +88,64 @@ namespace Bioware.GFF.Composite {
                 childs[index] = value;
             }
         }
+
+        #endregion
+
+        #region ICollection<GComponent> Membres
+
+        public void Add(GComponent item) {
+            childs.Add(item);
+            item.Owner = this;
+        }
+
+        public void Clear() {
+            foreach (GComponent c in childs) {
+                c.Owner = null;
+            }
+            childs.Clear();
+        }
+
+        public bool Contains(GComponent item) {
+            return childs.Contains(item);
+        }
+
+        public void CopyTo(GComponent[] array, int arrayIndex) {
+            childs.CopyTo(array, arrayIndex);
+        }
+
+        public int Count {
+            get { return childs.Count; }
+        }
+
+        public bool IsReadOnly {
+            get { return ((ICollection<GComponent>)childs).IsReadOnly; }
+        }
+
+        public bool Remove(GComponent item) {
+            if (childs.Remove(item)) {
+                item.Owner = null;
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region IEnumerable<GComponent> Membres
+
+        public IEnumerator<GComponent> GetEnumerator() {
+            return childs.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IEnumerable Membres
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return childs.GetEnumerator();
+        }
+
+        #endregion
     }
 }
 namespace Bioware.GFF {
@@ -632,7 +664,7 @@ namespace Bioware.GFF {
                 GStruct vs = d_sa_s[s];
                 s.Type = vs.StructType;
                 s.DataOrDataOffset = GetStructDataOrOffset(vs);
-                s.FieldCount = (uint)vs.GetAll().Count;
+                s.FieldCount = (uint)vs.Count;
             }
             foreach (GFieldFrame f in gb.FieldArray) {
                 GComponent cpnt = d_fa_f[f];
@@ -650,14 +682,14 @@ namespace Bioware.GFF {
             }
         }
         private uint GetStructDataOrOffset(GStruct vs) {
-            if (vs.GetAll().Count == 0) {
+            if (vs.Count == 0) {
                 return uint.MaxValue;
-            } else if (vs.GetAll().Count == 1) {
-                return (uint)gb.FieldArray.IndexOf(d_fa_f[vs.First]);
+            } else if (vs.Count == 1) {
+                return (uint)gb.FieldArray.IndexOf(d_fa_f[vs[0]]);
             } else {
                 BinaryWriter br = new BinaryWriter(gb.FieldIndicesArray);
                 long pos = gb.FieldIndicesArray.Position;
-                foreach (GComponent cpnt in vs.GetAll()) {
+                foreach (GComponent cpnt in vs) {
                     br.Write(gb.FieldArray.IndexOf(d_fa_f[cpnt]));
                 }
                 return (uint)pos;
@@ -666,8 +698,8 @@ namespace Bioware.GFF {
         private uint GetListDataOrOffset(GList lst) {
             BinaryWriter br = new BinaryWriter(gb.ListIndicesArray);
             long pos = gb.ListIndicesArray.Position;
-            br.Write((uint)lst.GetAll().Count);
-            foreach (GComponent cpnt in lst.GetAll()) {
+            br.Write((uint)lst.Count);
+            foreach (GComponent cpnt in lst) {
                 if (cpnt is GInListStruct) {
                     br.Write(gb.StructArray.IndexOf(d_sa_s[cpnt as GInListStruct]));
                 } else {
@@ -678,7 +710,11 @@ namespace Bioware.GFF {
         }
         private uint GetFieldDataOrOffset(GField f) {
             if (GComponent.IsSimple(f.Type)) {
-                return BitConverter.ToUInt32(f.Bytes, 0);
+                byte[] l_b = f.Bytes;
+                if (l_b.Length < 4) {
+                    Array.Resize<byte>(ref l_b, 4);
+                }
+                return BitConverter.ToUInt32(l_b, 0);
             } else {
                 BinaryWriter br = new BinaryWriter(gb.FieldDataBlock);
                 long pos = gb.FieldDataBlock.Position;
@@ -710,7 +746,7 @@ namespace Bioware.GFF {
             }
             if (GComponent.IsComposite(cpnt.Type)) {
                 GComposite cpsit = cpnt as GComposite;
-                foreach (GComponent child in cpsit.GetAll()) {
+                foreach (GComponent child in cpsit) {
                     CreateFrames(child);
                 }
             }

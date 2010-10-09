@@ -1,16 +1,17 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Resources;
 
 // Les informations générales relatives à un assembly dépendent de 
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
-[assembly: AssemblyTitle("ModuleSystem")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("BiowareSystem")]
+[assembly: AssemblyDescription("Permet de gérer les fichiers spécifique de Bioware dans NWN.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Aucune")]
-[assembly: AssemblyProduct("ModuleSystem")]
-[assembly: AssemblyCopyright("Copyright © Aucune 2010")]
+[assembly: AssemblyCompany("Wolf")]
+[assembly: AssemblyProduct("BiowareSystem")]
+[assembly: AssemblyCopyright("Copyright © Loup-Stéphane Peluso 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +33,6 @@ using System.Runtime.InteropServices;
 // Vous pouvez spécifier toutes les valeurs ou indiquer les numéros de build et de révision par défaut 
 // en utilisant '*', comme indiqué ci-dessous :
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.5.0.0")]
+[assembly: AssemblyFileVersion("2.42.0.0")]
+[assembly: NeutralResourcesLanguageAttribute("en")]

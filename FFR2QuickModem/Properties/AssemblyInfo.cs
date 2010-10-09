@@ -7,9 +7,9 @@ using System.Resources;
 // l'ensemble d'attributs suivant. Changez les valeurs de ces attributs pour modifier les informations
 // associées à un assembly.
 [assembly: AssemblyTitle("FFR2QuickModem")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Permet de modéliser un module sous forme de documents XML et inversement.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Wolf")]
 [assembly: AssemblyProduct("FFR2QuickModem")]
 [assembly: AssemblyCopyright("Copyright © Loup Stéphane Peluso 2010")]
 [assembly: AssemblyTrademark("")]
