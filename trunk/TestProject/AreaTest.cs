@@ -1,17 +1,17 @@
-﻿using Bioware.GFF;
+﻿using Bioware.NWN;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
+using Bioware.GFF;
 
 namespace TestProject
 {
     
     
     /// <summary>
-    ///Classe de test pour GWriterTest, destinée à contenir tous
-    ///les tests unitaires GWriterTest
+    ///Classe de test pour AreaTest, destinée à contenir tous
+    ///les tests unitaires AreaTest
     ///</summary>
     [TestClass()]
-    public class GWriterTest {
+    public class AreaTest {
 
 
         private TestContext testContextInstance;
@@ -61,10 +61,15 @@ namespace TestProject
 
 
         /// <summary>
-        ///Test pour Save
+        ///Test pour ChanceLightning
         ///</summary>
         [TestMethod()]
-        public void SaveTest() {
+        public void Area_ChanceLightningTest() {
+            string path = "D:/NWN/modules/ffr2_repository/";
+            GDocument[] list = new GDocument[] { new GDocument(path + "ext_ar_00.git"), new GDocument(path + "ext_ar_00.gic"), new GDocument(path + "ext_ar_00.are") };
+            Area area = new Area(list);
+            int expected = 0;
+            Assert.AreEqual(expected, area.ChanceLightning);
         }
     }
 }

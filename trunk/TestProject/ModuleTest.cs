@@ -1,5 +1,7 @@
 ﻿using Bioware.NWN;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+
 namespace TestProject
 {
     
@@ -57,15 +59,25 @@ namespace TestProject
         //
         #endregion
 
+        Module mod;
+        string root_path = "D:/NWN";
+        string module_name = "FFR2_V1_0a.mod";
 
         /// <summary>
         ///Test pour Load
         ///</summary>
         [TestMethod()]
-        public void LoadTest() {
-            string root_path = "D:/NWN";
-            string module_name = "FFR2_V1_0a.mod";
-            Module mod = new Module(root_path, module_name); // TODO : initialisez à une valeur appropriée
+        public void Module_LoadTest() {
+            mod = new Module(root_path, module_name); // TODO : initialisez à une valeur appropriée
+        }
+
+        /// <summary>
+        ///Test pour AreaList
+        ///</summary>
+        [TestMethod()]
+        public void Module_AreaListTest() {
+            Module_LoadTest();
+            List<Area> list = mod.AreaList;
         }
     }
 }

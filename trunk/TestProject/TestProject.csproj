@@ -46,8 +46,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AreaTest.cs" />
     <Compile Include="GExoLocStringTest.cs" />
-    <Compile Include="GWriterTest.cs" />
     <Compile Include="ModuleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -55,13 +55,13 @@
     <Content Include="AuthoringTests.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bioware\Bioware.csproj">
+    <ProjectReference Include="..\BiowareSystem\BiowareSystem.csproj">
       <Project>{FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA}</Project>
-      <Name>Bioware</Name>
+      <Name>BiowareSystem</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Shadow Include="Références de test\Bioware.accessor" />
+    <Shadow Include="Références de test\BiowareSystem.accessor" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
