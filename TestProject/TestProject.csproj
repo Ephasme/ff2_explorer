@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AreaTest.cs" />
+    <Compile Include="ContainerTest.cs" />
     <Compile Include="GExoLocStringTest.cs" />
     <Compile Include="ModuleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

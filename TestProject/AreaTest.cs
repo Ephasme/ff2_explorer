@@ -1,11 +1,12 @@
 ﻿using Bioware.NWN;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bioware.GFF;
+using System;
+using Bioware;
 
-namespace TestProject
-{
-    
-    
+namespace TestProject {
+
+
     /// <summary>
     ///Classe de test pour AreaTest, destinée à contenir tous
     ///les tests unitaires AreaTest
@@ -13,6 +14,9 @@ namespace TestProject
     [TestClass()]
     public class AreaTest {
 
+        string path;
+        GDocument[] list;
+        Area area;
 
         private TestContext testContextInstance;
 
@@ -46,10 +50,13 @@ namespace TestProject
         //}
         //
         //Utilisez TestInitialize pour exécuter du code avant d'exécuter chaque test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
+        [TestInitialize()]
+        public void MyTestInitialize()
+        {
+            path = "D:/NWN/modules/ffr2_repository/";
+            list = new GDocument[] { new GDocument(path + "ext_ar_00.git"), new GDocument(path + "ext_ar_00.gic"), new GDocument(path + "ext_ar_00.are") };
+            area = new Area(list);
+        }
         //
         //Utilisez TestCleanup pour exécuter du code après que chaque test a été exécuté
         //[TestCleanup()]
@@ -60,16 +67,43 @@ namespace TestProject
         #endregion
 
 
+
         /// <summary>
         ///Test pour ChanceLightning
         ///</summary>
         [TestMethod()]
-        public void Area_ChanceLightningTest() {
-            string path = "D:/NWN/modules/ffr2_repository/";
-            GDocument[] list = new GDocument[] { new GDocument(path + "ext_ar_00.git"), new GDocument(path + "ext_ar_00.gic"), new GDocument(path + "ext_ar_00.are") };
-            Area area = new Area(list);
-            int expected = 0;
-            Assert.AreEqual(expected, area.ChanceLightning);
+        public void Area_PropertiesTest() {
+            Assert.AreEqual(0, area.ChanceLightning);
+            area.ChanceLightning = 5;
+            Assert.AreEqual(5, area.ChanceLightning);
+            area.ChanceLightning = 0;
+
+            Assert.AreEqual(20, area.ChanceRain);
+            area.ChanceRain = 5;
+            Assert.AreEqual(5, area.ChanceRain);
+            area.ChanceRain = 20;
+
+            Assert.AreEqual(false, area.MoonShadows);
+            area.MoonShadows = true;
+            Assert.AreEqual(true, area.MoonShadows);
+            area.MoonShadows = false;
+
+            Assert.AreEqual("ext_ar_00", area.ResRef);
+            area.ResRef = (ResRef)"tagada";
+            Assert.AreEqual("tagada", area.ResRef);
+            area.ResRef = (ResRef)"ext_ar_00";
+
+        }
+
+        /// <summary>
+        ///Test pour GetName
+        ///</summary>
+        [TestMethod()]
+        public void Area_NameTest() {
+            Lang langue = Lang.English;
+            string expected = "Lyon - Porte Nord";
+            string actual = area.GetName(langue);
+            Assert.AreEqual(expected, actual);
         }
     }
 }

@@ -1,13 +1,35 @@
 ﻿using Bioware.GFF;
 using Bioware.Resources;
+using Bioware.GFF.Field;
 namespace Bioware.NWN {
     public class Area {
+        #region Nom des propriétés.
         const string CHANCE_LIGHTNING = "ChanceLightning";
         const string CHANCE_RAIN = "ChanceRain";
         const string CHANCE_SNOW = "ChanceSnow";
         const string COMMENTS = "Comments";
-        const string CREATOR_ID = "Creator_ID";
+        const string DAY_NIGHT_CYCLE = "DayNightCycle";
+        const string FLAGS = "Flags";
         const string HEIGHT = "Height";
+        const string IS_NIGHT = "IsNight";
+        const string LIGHTING_SCHEME = "LightingScheme";
+        const string LOAD_SCREEN_ID = "LoadScreenID";
+        const string MOD_LISTEN_CHECK = "ModListenCheck";
+        const string MOD_SPOT_CHECK = "ModSpotCheck";
+        const string MOON_AMBIENT_COLOR = "MoonAmbientColor";
+        const string MOON_DIFFUSE_COLOR = "MoonDiffuseColor";
+        const string MOON_FOG_AMOUNT = "MoonFogAmount";
+        const string MOON_FOG_COLOR = "MoonFogColor";
+        const string MOON_SHADOWS = "MoonShadows";
+        const string NAME = "Name";
+        const string NO_REST = "NoRest";
+        const string ON_ENTER = "OnEnter";
+        const string ON_HEART_BEAT = "OnHeartbeat";
+        const string ON_USER_DEFINED = "OnUserDefined";
+        const string PLAYER_VS_PLAYER = "PlayerVsPlayer";
+        const string RES_REF = "ResRef";
+
+        #endregion
         #region Propriétés de l'aire.
         /// <summary>
         /// Percent chance of lightning (0-100).
@@ -23,7 +45,7 @@ namespace Bioware.NWN {
         /// <summary>
         /// Percent chance of rain (0-100).
         /// </summary>
-        public int ChangeRain {
+        public int ChanceRain {
             get {
                 return int.Parse(gd_are.RootStruct.SelectField(CHANCE_RAIN).Value);
             }
@@ -54,22 +76,11 @@ namespace Bioware.NWN {
             }
         }
         /// <summary>
-        /// Deprecated; unused. Always -1.
-        /// </summary>
-        public int Creator_ID {
-            get {
-                return -1;
-            }
-            set {
-                gd_are.RootStruct.SelectField(CREATOR_ID).Value = "-1";
-            }
-        }
-        /// <summary>
         /// 1 if day/night transitions occur, 0 otherwise.
         /// </summary>
         public bool DayNightCycle {
             get {
-                return (gd_are.RootStruct.SelectField("DayNightCycle").Value == "1");
+                return (gd_are.RootStruct.SelectField(DAY_NIGHT_CYCLE).Value == "1");
             }
             set {
                 string res;
@@ -78,10 +89,9 @@ namespace Bioware.NWN {
                 } else {
                     res = "0";
                 }
-                gd_are.RootStruct.SelectField("DayNightCycle").Value = res;
+                gd_are.RootStruct.SelectField(DAY_NIGHT_CYCLE).Value = res;
             }
         }
-        /* Flags à implémenter
         #region Flags.
         //Flags DWORD Set of bit flags specifying area terrain type:
         //0x0001 = interior (exterior if unset)
@@ -94,24 +104,29 @@ namespace Bioware.NWN {
         //toolset presents the area to the user.
         public bool IsInterior {
             get {
+                return (int.Parse(gd_are.RootStruct.SelectField(FLAGS).Value) == 0x0001);
             }
             set {
+                gd_are.RootStruct.SelectField(FLAGS).Value = (0x0001).ToString();
             }
         }
         public bool IsUnderground {
             get {
+                return (int.Parse(gd_are.RootStruct.SelectField(FLAGS).Value) == 0x0002);
             }
             set {
+                gd_are.RootStruct.SelectField(FLAGS).Value = (0x0002).ToString();
             }
         }
         public bool IsNatural {
             get {
+                return (int.Parse(gd_are.RootStruct.SelectField(FLAGS).Value) == 0x0004);
             }
             set {
+                gd_are.RootStruct.SelectField(FLAGS).Value = (0x0004).ToString();
             }
         }
         #endregion
-        */
         /// <summary>
         /// Area size in the y-direction (north-south direction) measured in number of tiles.
         /// </summary>
@@ -120,15 +135,16 @@ namespace Bioware.NWN {
                 return int.Parse(gd_are.RootStruct.SelectField(HEIGHT).Value);
             }
         }
-        /* Propriétés à implémenter
         /// <summary>
         /// BYTE 1 if the area is always night, 0 if area is always day.
         /// Meaningful only if DayNightCycle is 0.
         /// </summary>
         public bool IsNight {
             get {
+                return (gd_are.RootStruct.SelectField(IS_NIGHT).Value == "1");
             }
             set {
+                gd_are.RootStruct.SelectField(IS_NIGHT).Value = (value) ? ("1") : ("0");
             }
         }
         /// <summary>
@@ -136,8 +152,10 @@ namespace Bioware.NWN {
         /// </summary>
         public byte LightingScheme {
             get {
+                return byte.Parse(gd_are.RootStruct.SelectField(LIGHTING_SCHEME).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(LIGHTING_SCHEME).Value = value.ToString();
             }
         }
         /// <summary>
@@ -146,8 +164,10 @@ namespace Bioware.NWN {
         /// </summary>
         public ushort LoadScreenID {
             get {
+                return ushort.Parse(gd_are.RootStruct.SelectField(LOAD_SCREEN_ID).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(LOAD_SCREEN_ID).Value = value.ToString();
             }
         }
         /// <summary>
@@ -155,8 +175,10 @@ namespace Bioware.NWN {
         /// </summary>
         public int ModListenCheck {
             get {
+                return int.Parse(gd_are.RootStruct.SelectField(MOD_LISTEN_CHECK).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(MOD_LISTEN_CHECK).Value = value.ToString();
             }
         }
         /// <summary>
@@ -164,8 +186,10 @@ namespace Bioware.NWN {
         /// </summary>
         public int ModSpotCheck {
             get {
+                return int.Parse(gd_are.RootStruct.SelectField(MOD_SPOT_CHECK).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(MOD_SPOT_CHECK).Value = value.ToString();
             }
         }
         /// <summary>
@@ -173,8 +197,10 @@ namespace Bioware.NWN {
         /// </summary>
         public uint MoonAmbientColor {
             get {
+                return uint.Parse(gd_are.RootStruct.SelectField(MOON_AMBIENT_COLOR).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(MOON_AMBIENT_COLOR).Value = value.ToString();
             }
         }
         /// <summary>
@@ -182,8 +208,10 @@ namespace Bioware.NWN {
         /// </summary>
         public uint MoodDiffuseColor {
             get {
+                return uint.Parse(gd_are.RootStruct.SelectField(MOON_DIFFUSE_COLOR).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(MOON_DIFFUSE_COLOR).Value = value.ToString();
             }
         }
         /// <summary>
@@ -191,8 +219,10 @@ namespace Bioware.NWN {
         /// </summary>
         public byte MoonFogAmount {
             get {
+                return byte.Parse(gd_are.RootStruct.SelectField(MOON_FOG_AMOUNT).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(MOON_FOG_AMOUNT).Value = value.ToString();
             }
         }
         /// <summary>
@@ -200,8 +230,10 @@ namespace Bioware.NWN {
         /// </summary>
         public uint MoonFogColor {
             get {
+                return uint.Parse(gd_are.RootStruct.SelectField(MOON_FOG_COLOR).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(MOON_FOG_COLOR).Value = value.ToString();
             }
         }
         /// <summary>
@@ -209,74 +241,76 @@ namespace Bioware.NWN {
         /// </summary>
         public bool MoonShadows {
             get {
+                return (gd_are.RootStruct.SelectField(MOON_SHADOWS).Value == "0") ? (false) : (true);
             }
             set {
+                gd_are.RootStruct.SelectField(MOON_SHADOWS).Value = (value) ? ("1") : ("0");
             }
         }
-
-        /// <summary>
-        /// CExoLocString Name of area as seen in game and in left-hand module
-        /// contents treeview in toolset. If there is a colon (:) in the
-        /// name, then the game does not show any of the text up
-        /// to and including the first colon.
-        /// </summary>
         /// <param name="langue">Langue dans laquelle on veut récupérer le nom de la map.</param>
         /// <returns>Nom de la map dans la langue demandée.</returns>
-        public string Name(Lang langue) {
-
+        public string GetName(Lang langue) {
+            var efld = new GExoLocField(gd_are.RootStruct.SelectField(NAME));
+            return efld.GetString(langue);
         }
-        /// <summary>
-        /// CExoLocString Name of area as seen in game and in left-hand module
-        /// contents treeview in toolset. If there is a colon (:) in the
-        /// name, then the game does not show any of the text up
-        /// to and including the first colon.
-        /// </summary>
         /// <param name="langue">Langue dans laquelle on veut définir le nom de l'aire.</param>
-        public void SetName(Lang langue) {
+        public void SetName(Lang langue, string name) {
+            var efld = new GExoLocField(gd_are.RootStruct.SelectField(NAME));
+            efld.SetString(langue, name);
         }
         /// <summary>
         /// BYTE 1 if resting is not allowed, 0 otherwise
         /// </summary>
         public bool NoRest {
             get {
+                return (gd_are.RootStruct.SelectField(NO_REST).Value == "1");
             }
             set {
+                gd_are.RootStruct.SelectField(NO_REST).Value = (value) ? ("1") : ("0");
             }
         }
         /// <summary>
         /// CResRef OnEnter event
         /// </summary>
-        public string OnEnter {
+        public ResRef OnEnter {
             get {
+                return (ResRef)gd_are.RootStruct.SelectField(ON_ENTER).Value;
             }
             set {
+                gd_are.RootStruct.SelectField(ON_ENTER).Value = value;
             }
         }
         /// <summary>
         /// CResRef OnExit event
         /// </summary>
-        public string OnExit {
+        public ResRef OnExit {
             get {
+                return (ResRef)gd_are.RootStruct.SelectField(ON_ENTER).Value;
             }
             set {
+                gd_are.RootStruct.SelectField(ON_ENTER).Value = value;
             }
         }
         /// <summary>
         /// CResRef OnHeartbeat event
         /// </summary>
-        public string OnHeartbeat {
+        public ResRef OnHeartbeat {
             get {
+                return (ResRef)gd_are.RootStruct.SelectField(ON_HEART_BEAT).Value;
             }
             set {
+                gd_are.RootStruct.SelectField(ON_HEART_BEAT).Value = value;
             }
         }
         /// <summary>
         /// CResRef OnUserDefined event
         /// </summary>
-        public string OnUserDefined {
+        public ResRef OnUserDefined {
             get {
+                return (ResRef)gd_are.RootStruct.SelectField(ON_USER_DEFINED).Value;
             }
             set {
+                gd_are.RootStruct.SelectField(ON_USER_DEFINED).Value = value;
             }
         }
         /// <summary>
@@ -287,8 +321,10 @@ namespace Bioware.NWN {
         /// </summary>
         public byte PlayerVsPlayer {
             get {
+                return byte.Parse(gd_are.RootStruct.SelectField(PLAYER_VS_PLAYER).Value);
             }
             set {
+                gd_are.RootStruct.SelectField(PLAYER_VS_PLAYER).Value = value.ToString();
             }
         }
         /// <summary>
@@ -296,10 +332,14 @@ namespace Bioware.NWN {
         /// </summary>
         public ResRef ResRef {
             get {
+                return (ResRef)gd_are.RootStruct.SelectField(RES_REF).Value;
             }
             set {
+                gd_are.RootStruct.SelectField(RES_REF).Value = value;
             }
         }
+        /* Propriétés à implémenter
+
         /// <summary>
         /// BYTE Index into skyboxes.2da (0-255). 0 means no skybox.
         /// </summary>

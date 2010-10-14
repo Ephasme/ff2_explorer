@@ -18,6 +18,7 @@ namespace Bioware.NWN {
         public const string HAK_DIR = "/hak";
         private static string FILE_INFO_NAME = "module." + Enum.GetName(typeof(ResType), ResType.ifo);
         ResourceManager rm;
+        EFile mod;
         GDocument mod_info;
         List<Area> area_list;
         string[] hak_list;
@@ -38,14 +39,13 @@ namespace Bioware.NWN {
                 rm.Add(Directory.GetFiles(di_root.FullName, "*" + KFile.EXT));
                 rm.Add(di_override.FullName);
 
-                var mod = new EFile(di_modules.FullName + "/" + module_name);
+                mod = new EFile(di_modules.FullName + "/" + module_name);
                 mod_info = new GDocument(mod[FILE_INFO_NAME].DataStream);
                 rm.Add(HakList);
 
                 rm.Add(di_modules.FullName + "/" + module_name);
             }
         }
-
         public string[] HakList {
             get {
                 if (hak_list == null) {
