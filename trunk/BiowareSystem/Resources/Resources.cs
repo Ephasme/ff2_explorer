@@ -50,7 +50,7 @@ namespace Bioware.Resources {
     }
     public class ContentObject {
         uint offset, size;
-        public Stream DataStream {
+        public MemoryStream DataStream {
             get {
                 BinaryReader br = new BinaryReader(File.OpenRead(FilePath));
                 br.Stream.Position = offset;
@@ -62,7 +62,7 @@ namespace Bioware.Resources {
         public string FilePath { get; set; }
         public string FileName {
             get {
-                return ResRef.String + "." + Enum.GetName(typeof(ResType), ResType);
+                return ResRef + "." + Enum.GetName(typeof(ResType), ResType);
             }
             set {
                 ResType = (ResType)Enum.Parse(typeof(ResType), Path.GetExtension(value).TrimStart('.').Trim().ToLower());
@@ -88,6 +88,30 @@ namespace Bioware.Resources {
         private Dictionary<string, ContentObject> Contents;
         public Container() {
             Contents = new Dictionary<string, ContentObject>();
+        }
+        public delegate bool ExtractCondition(ContentObject co);
+        public void ExtractAll(string path, ExtractCondition condMeth) {
+            if (Directory.Exists(path)) {
+                Directory.Delete(path, true);
+            }
+            DirectoryInfo di = Directory.CreateDirectory(path);
+            foreach (ContentObject co in Contents.Values) {
+                if (condMeth(co)) {
+                    File.WriteAllBytes(path + "/" + co.FileName, co.DataStream.ToArray());
+                }
+            }
+        }
+        public void Extract(string path, string filename) {
+            File.WriteAllBytes(path + "/" + filename, Contents[filename].DataStream.ToArray());
+        }
+        public void ExtractAll(string path) {
+            ExtractAll(path, (item) => true);
+        }
+        public void ExtractAll(string path, ResType type) {
+            ExtractAll(path, (item) => item.ResType == type);
+        }
+        public void ExtractAll(string path, string part) {
+            ExtractAll(path, (item) => item.FileName.Contains(part));
         }
         public void Add(ContentObject cobj) {
             if (Contents.ContainsKey(cobj.FileName)) {

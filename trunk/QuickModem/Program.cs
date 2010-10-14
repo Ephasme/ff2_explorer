@@ -2,7 +2,11 @@
 using System;
 using Bioware.GFF;
 using Bioware.GFF.XML;
+using System.Text.RegularExpressions;
 using System.Configuration;
+using Bioware;
+using System.Text;
+using Bioware.Resources;
 namespace QuickModem {
 
     class QuickModem {
@@ -26,27 +30,9 @@ namespace QuickModem {
         public bool Again { get; set; }
 
         public QuickModem() {
-            Initialize();
         }
 
-        string tempDirName, xmlDirName, repoDirName;
-
-        private void Initialize() {
-            xmlDirName = ConfigurationManager.AppSettings["XmlDir"];
-            tempDirName = ConfigurationManager.AppSettings["TempDir"];
-            repoDirName = ConfigurationManager.AppSettings["RepoDir"];
-            if (Directory.Exists(repoDirName)) {
-                DirectoryInfo di_repo = new DirectoryInfo(repoDirName);
-                FileInfo[] l_repo_fi = di_repo.GetFiles();
-                if (!Directory.Exists(tempDirName)) {
-                    CreateDirectory(tempDirName);
-                    foreach (FileInfo fi in l_repo_fi) {
-                        fi.CopyTo(tempDirName + "/" + fi.Name);
-                    }
-                }
-            }
-            Again = true;
-        }
+        string baseDirName, tempDirName, xmlDirName, modDirName;
 
         public void WriteHeader() {
             Console.Clear();
@@ -68,21 +54,68 @@ namespace QuickModem {
         public delegate bool DoActionMethod(FileInfo file);
         public delegate void ActionMethod(FileInfo file);
 
-        internal void Start() {
+        private void GetConfig() {
+            if (File.Exists("./qm.ini")) {
+                StreamReader str = new StreamReader(File.OpenRead("./qm.ini"));
+                Regex rg = new Regex("^(?<item>.*)=(?<value>.*)");
+                while (!str.EndOfStream) {
+                    string line = str.ReadLine();
+                    Match m = rg.Match(line);
+                    switch (m.Groups["item"].Value) {
+                        case "BASE":
+                            baseDirName = m.Groups["value"].Value;
+                            break;
+                        case "MODULE":
+                            modDirName = m.Groups["value"].Value;
+                            break;
+                    }
+                }
+                str.Close();
+            } else {
+                baseDirName = Path.GetFullPath("./");
+                modDirName = baseDirName + "/modules/FFR.mod";
+            }
+        }
+
+        private void SetConfig() {
+            StreamWriter strw = new StreamWriter(File.Create("./qm.ini"), Encoding.ASCII);
+            strw.WriteLine("BASE=" + baseDirName);
+            strw.WriteLine("MODULE=" + modDirName);
+            strw.Close();
+        }
+
+        public void Start() {
+            GetConfig();
+            GetBaseDirectory();
+            tempDirName = baseDirName + "/modules/temp0";
+            xmlDirName = baseDirName + "/modules/xml";
+            if (!Directory.Exists(tempDirName)) {
+                CreateDirectory(tempDirName);
+                GetModuleDirectory();
+                var mod = new EFile(modDirName);
+                Console.WriteLine("Extraction du module... Veuillez patienter.");
+                var dt = DateTime.Now;
+                mod.ExtractAll(tempDirName);
+                Console.WriteLine("Extraction exécutée en "+(DateTime.Now.Subtract(dt).TotalSeconds+" secondes."));
+                PushToContinue();
+            } else {
+                Console.WriteLine("Utilisation du dossier temp0 déjà présent.");
+                PushToContinue();
+            }
+            SetConfig();
+            CreateDirectory(xmlDirName);
+            Again = true;
+
             while (Again) {
                 WriteHeader();
                 Console.WriteLine("Votre choix : ");
                 int result = Convert.ToChar(Console.Read());
                 switch (result) {
                     case MODELISATION:
-                        CreateDirectory(xmlDirName);
                         DoOnFiles(tempDirName, xmlDirName, IsGFF, ModelFile);
-                        PushToContinue();
                         break;
                     case DEMODELISATION:
-                        CreateDirectory(tempDirName);
                         DoOnFiles(xmlDirName, tempDirName, IsXML, DemodFile);
-                        PushToContinue();
                         break;
                     case QUITTER:
                         SetToClose();
@@ -90,10 +123,43 @@ namespace QuickModem {
                 }
             }
         }
+
+        private void GetModuleDirectory() {
+            while (!File.Exists(modDirName)) {
+                var di_basedir = new DirectoryInfo(baseDirName + "/modules");
+                var l_fi_modules = di_basedir.GetFiles("*" + EFile.MOD_EXT);
+                int choice = -1;
+                bool choice_ok = false;
+                while (choice_ok == false) {
+                    Console.Clear();
+                    Console.WriteLine("Vous utilisez le répertoire de base : " + baseDirName);
+                    Console.WriteLine("Quel module voulez-vous charger ?");
+                    foreach (var fi_module in l_fi_modules) {
+                        Console.WriteLine("\t" + Array.IndexOf(l_fi_modules, fi_module) + ") " + fi_module.Name);
+                    }
+                    choice_ok = int.TryParse(Console.ReadLine(), out choice);
+                    choice_ok &= (choice >= 0 && choice < l_fi_modules.Length);
+                    if (choice_ok == false) {
+                        Console.WriteLine("Impossible d'interpréter la demande " + choice + ".\nVeuillez recommencer.\n");
+                    } else {
+                        modDirName = l_fi_modules[choice].FullName;
+                    }
+                }
+            }
+        }
+
+        private void GetBaseDirectory() {
+            while (!Directory.Exists(baseDirName + "/modules")) {
+                Console.Clear();
+                Console.WriteLine("Veuillez entrer le répertoire de votre installation de NWN :");
+                baseDirName = Console.ReadLine();
+            }
+        }
         public void DoOnFiles(string path, string copy_path, DoActionMethod doAction, ActionMethod actionMethod) {
             if (Directory.Exists(path)) {
                 string[] l_sfi = Directory.GetFiles(path);
                 int cent = 0;
+                var dt = DateTime.Now;
                 for (int i = 0; i < l_sfi.Length; i++) {
                     if (cent <= ((int)(SEPARATOR_SIZE * i) / l_sfi.Length)) {
                         cent++;
@@ -106,7 +172,11 @@ namespace QuickModem {
                         File.Copy(fi.FullName, copy_path + "/" + fi.Name, true);
                     }
                 }
-                Console.Write("\n");
+                var ts = DateTime.Now.Subtract(dt);
+                Console.WriteLine("\nProcessus exécuté en " + ts.Minutes + " min " + ts.Seconds + " sec " + ts.Milliseconds + " msec.");
+                PushToContinue();
+            } else {
+                Console.WriteLine("Le dossier " + Path.GetFullPath(path) + " n'existe pas.");
             }
         }
 

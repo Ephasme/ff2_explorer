@@ -7,7 +7,10 @@ namespace Bioware {
         public const int LENGTH = 16;
         string value;
         public static implicit operator string(ResRef resref) {
-            return resref.String;
+            return resref.ToString();
+        }
+        public static explicit operator ResRef(string value) {
+            return new ResRef(value);
         }
         public static bool operator ==(ResRef r1, ResRef r2) {
             return r1.Equals(r2);
@@ -25,25 +28,15 @@ namespace Bioware {
         public override int GetHashCode() {
             return BitConverter.ToInt32(Encoding.ASCII.GetBytes(this.value), 0);
         }
-        public string String {
-            get {
-                return value;
-            }
-            set {
-                if (value.Length > LENGTH) {
-                    throw new ApplicationException("ResRef trop long.");
-                }
-                this.value = value;
-            }
+        public override string ToString() {
+            return value;
         }
         public char[] CharTable {
             get {
                 return value.PadRight(LENGTH, '\0').ToCharArray();
             }
             set {
-                if (value.Length > LENGTH) {
-                    throw new ApplicationException("ResRef trop long.");
-                }
+                test_length(value);
                 this.value = new string(value).TrimEnd('\0').Trim().ToLower();
             }
         }
@@ -51,7 +44,13 @@ namespace Bioware {
             CharTable = res_ref;
         }
         public ResRef(string res_ref) {
-            String = res_ref;
+            test_length(res_ref.ToCharArray());
+            this.value = res_ref;
+        }
+        private void test_length(char[] resref) {
+            if (resref.Length > LENGTH) {
+                throw new ApplicationException("ResRef trop long.");
+            }
         }
     }
     public enum ResType : ushort {

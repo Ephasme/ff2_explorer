@@ -16,14 +16,14 @@ namespace Bioware.GFF.Field {
         }
     }
 
+    #region Readers.
     public interface IValueReader {
         void Parse(string value);
         void Parse(GField field);
         string TextValue { get; }
         byte[] ByteArray { get; }
     }
-
-    public class GByteReader : IValueReader {
+    class GByteReader : IValueReader {
         byte value;
         public void Parse(string value) {
             this.value = byte.Parse(value);
@@ -45,7 +45,7 @@ namespace Bioware.GFF.Field {
             }
         }
     }
-    public class GExoLocStringReader : IValueReader {
+    class GExoLocStringReader : IValueReader {
         Dictionary<int, string> dic;
         int strref;
         public void Parse(string value) {
@@ -59,6 +59,18 @@ namespace Bioware.GFF.Field {
                 dic.Add(int.Parse(m.Groups["id"].Value), _Decode(m.Groups["value"].Value));
             }
         }
+        public string GetString(Lang lang) {
+            if (dic.ContainsKey((int)lang)) {
+                return dic[(int)lang];
+            }
+            return string.Empty;
+        }
+        public void SetString(Lang lang, string name) {
+            if (dic.ContainsKey((int)lang)) {
+                dic[(int)lang] = name;
+            }
+        }
+
         public void Parse(GField fld) {
             if (fld.Type == GType.CEXOLOCSTRING) {
                 dic = new Dictionary<int, string>();
@@ -106,7 +118,7 @@ namespace Bioware.GFF.Field {
             return p.Replace("&DBLBAR&", "||").Replace("&EGAL&", "=");
         }
     }
-    public class GExoStringReader : IValueReader {
+    class GExoStringReader : IValueReader {
         public GExoStringReader() { }
         string value;
         public void Parse(string value) {
@@ -125,7 +137,7 @@ namespace Bioware.GFF.Field {
             get { return LatinEncoding.LATIN1.GetBytes(value); }
         }
     }
-    public class GCharReader : IValueReader {
+    class GCharReader : IValueReader {
         #region IValueReader Membres
         char c;
         public void Parse(string value) {
@@ -149,7 +161,7 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
-    public class GDoubleReader : IValueReader {
+    class GDoubleReader : IValueReader {
         #region IValueReader Membres
         double d;
         public void Parse(string value) {
@@ -170,7 +182,7 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
-    public class GDwordReader : IValueReader {
+    class GDwordReader : IValueReader {
         #region IValueReader Membres
         uint dword;
         public void Parse(string value) {
@@ -191,7 +203,7 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
-    public class GDword64Reader : IValueReader {
+    class GDword64Reader : IValueReader {
         #region IValueReader Membres
         ulong d64;
         public void Parse(string value) {
@@ -212,7 +224,7 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
-    public class GFloatReader : IValueReader {
+    class GFloatReader : IValueReader {
         #region IValueReader Membres
         float f;
         public void Parse(string value) {
@@ -233,7 +245,7 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
-    public class GIntReader : IValueReader {
+    class GIntReader : IValueReader {
         #region IValueReader Membres
         int i;
         public void Parse(string value) {
@@ -254,7 +266,7 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
-    public class GInt64Reader : IValueReader {
+    class GInt64Reader : IValueReader {
         #region IValueReader Membres
         long i64;
         public void Parse(string value) {
@@ -275,7 +287,7 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
-    public class GResRefReader : IValueReader {
+    class GResRefReader : IValueReader {
         ResRef resref;
         public void Parse(string value) {
             resref = new ResRef(value);
@@ -293,7 +305,7 @@ namespace Bioware.GFF.Field {
             get { return LatinEncoding.LATIN1.GetBytes(resref); }
         }
     }
-    public class GShortReader : IValueReader {
+    class GShortReader : IValueReader {
         #region IValueReader Membres
         short sh;
         public void Parse(string value) {
@@ -314,7 +326,7 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
-    public class GWordReader : IValueReader {
+    class GWordReader : IValueReader {
         #region IValueReader Membres
         ushort ush;
         public void Parse(string value) {
@@ -337,9 +349,24 @@ namespace Bioware.GFF.Field {
 
         #endregion
     }
+    #endregion
+
+    public class GExoLocField : GField {
+        new GExoLocStringReader ValueReader { get; set; }
+        public GExoLocField(GField field)
+            : base(field.Label, field.Type, field.Value) {
+            this.ValueReader = field.ValueReader as GExoLocStringReader;
+        }
+        public string GetString(Lang lang) {
+            return ValueReader.GetString(lang);
+        }
+        public void SetString(Lang lang, string value) {
+            ValueReader.SetString(lang, value);
+        }
+    }
 
     public class GField : GComponent {
-        IValueReader ValueReader;
+        public IValueReader ValueReader;
         GFieldData FieldData;
         public byte[] Bytes {
             get {
