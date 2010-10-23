@@ -1,0 +1,169 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer />
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="Length" priority="1" />
+      <Item value="return" priority="7" />
+      <Item value="null" priority="2" />
+      <Item value="if" priority="8" />
+      <Item value="res" priority="1" />
+      <Item value="throw" priority="2" />
+      <Item value="new" priority="7" />
+      <Item value="AbandonedMutexException" priority="0" />
+      <Item value="BinaryReader" priority="1" />
+      <Item value="_srd" priority="4" />
+      <Item value="var" priority="9" />
+      <Item value="line" priority="3" />
+      <Item value="while" priority="1" />
+      <Item value="string" priority="1" />
+      <Item value="Columns" priority="0" />
+      <Item value="else" priority="0" />
+      <Item value="break" priority="0" />
+      <Item value="Path`0" priority="0" />
+      <Item value="ext" priority="5" />
+      <Item value="NullReferenceException" priority="0" />
+      <Item value="c" priority="0" />
+      <Item value="ApplicationException" priority="0" />
+      <Item value="br" priority="6" />
+      <Item value="FileTypeLength" priority="1" />
+      <Item value="Begin" priority="0" />
+      <Item value="sizeof" priority="2" />
+      <Item value="SeekOrigin`0" priority="0" />
+      <Item value="Current" priority="2" />
+      <Item value="ReservedSize" priority="0" />
+      <Item value="restype" priority="0" />
+      <Item value="CultureInfo" priority="0" />
+      <Item value="v" priority="3" />
+      <Item value="Dimension" priority="2" />
+      <Item value="false" priority="1" />
+      <Item value="ReferenceEquals`0" priority="0" />
+      <Item value="this" priority="1" />
+      <Item value="true" priority="1" />
+      <Item value="foreach" priority="0" />
+      <Item value="char" priority="1" />
+      <Item value="double" priority="3" />
+      <Item value="in" priority="1" />
+      <Item value="d" priority="3" />
+      <Item value="_c" priority="2" />
+      <Item value="int" priority="1" />
+      <Item value="i" priority="6" />
+      <Item value="as" priority="1" />
+      <Item value="Assert`0" priority="0" />
+      <Item value="nAreas" priority="0" />
+      <Item value="strList" priority="1" />
+      <Item value="for" priority="2" />
+      <Item value="strcount" priority="3" />
+      <Item value="key" priority="1" />
+      <Item value="KeyValuePair&lt;int,string&gt;" priority="0" />
+      <Item value="EnvironmentVariableTarget`0" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.IO.StreamReader">
+      <Item value="ReadLine`0" priority="3" />
+      <Item value="EndOfStream" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.IO.Path">
+      <Item value="GetExtension`0" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Bioware.BinaryReader">
+      <Item value="BaseStream" priority="4" />
+      <Item value="ReadInt32`0" priority="0" />
+      <Item value="ReadChars`0" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.IO.Stream">
+      <Item value="Seek`0" priority="4" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.IO.SeekOrigin">
+      <Item value="Current" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.String">
+      <Item value="ToUpper`0" priority="1" />
+      <Item value="Substring`0" priority="1" />
+      <Item value="TrimStart`0" priority="0" />
+      <Item value="Trim`0" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Bioware.Geometry.Vertex">
+      <Item value="Dimension" priority="0" />
+      <Item value="_c" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Double">
+      <Item value="Epsilon" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@Microsoft.VisualStudio.TestTools.UnitTesting.Assert">
+      <Item value="IsNotNull`0" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.KeyValuePair`2">
+      <Item value="Key" priority="0" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:ListAndStruct.cs" caret="1709" fromTop="9" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:NWN/f:Area.cs" caret="16901" fromTop="2" />
+      <File id="4386F374-C1F4-49D4-817A-9E0D08C3CA18/f:AreaTest.cs" caret="0" fromTop="0" />
+      <File id="4386F374-C1F4-49D4-817A-9E0D08C3CA18/f:ContainerTest.cs" caret="2033" fromTop="29" />
+      <File id="A3D8FDC3-16EE-4551-8C2E-B045A85ADF9F/f:Program.cs" caret="8286" fromTop="28" />
+      <File id="4386F374-C1F4-49D4-817A-9E0D08C3CA18/f:GExoLocStringTest.cs" caret="1795" fromTop="8" />
+      <File id="4386F374-C1F4-49D4-817A-9E0D08C3CA18/f:ModuleTest.cs" caret="2107" fromTop="38" />
+      <File id="4386F374-C1F4-49D4-817A-9E0D08C3CA18/f:VertexTest.cs" caret="2093" fromTop="20" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:NWN/f:Module.cs" caret="136" fromTop="7" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:Fields.cs" caret="173" fromTop="6" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:XML.cs" caret="0" fromTop="0" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:Exceptions.cs" caret="1137" fromTop="23" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:Frames.cs" caret="768" fromTop="20" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/d:Field/f:Fields.cs" caret="4580" fromTop="25" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="25698" fromTop="560" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/f:Bases.cs" caret="169" fromTop="7" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:Resources/f:Resources.cs" caret="0" fromTop="0" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:Geometry/f:Geometry.cs" caret="595" fromTop="17" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="2971" fromTop="8" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="6327" fromTop="0" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="367" fromTop="8" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="1898" fromTop="9" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="2115" fromTop="8" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="4706" fromTop="6" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="7869" fromTop="27" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="6214" fromTop="20" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="7474" fromTop="25" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="8251" fromTop="14" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="6563" fromTop="8" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="6825" fromTop="8" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="7088" fromTop="8" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="9546" fromTop="14" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="9723" fromTop="15" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="9963" fromTop="9" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="10554" fromTop="8" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="17152" fromTop="11" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="17509" fromTop="7" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="20633" fromTop="12" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="21766" fromTop="25" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="22174" fromTop="15" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="21873" fromTop="8" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="23291" fromTop="26" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="22878" fromTop="11" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="23740" fromTop="16" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="24206" fromTop="18" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="24466" fromTop="19" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="25402" fromTop="15" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="25542" fromTop="19" />
+    </RecentEdits>
+  </RecentFiles>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <UnitTestRunner>
+    <Providers />
+  </UnitTestRunner>
+  <UnitTestRunnerNUnit>
+    <NUnitInstallDir IsNull="False">
+    </NUnitInstallDir>
+    <UseAddins>Never</UseAddins>
+  </UnitTestRunnerNUnit>
+</Configuration>

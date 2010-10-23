@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
+
 using Bioware.GFF.Composite;
 using Bioware.GFF.Exception;
 using Bioware.GFF.Field;
@@ -8,18 +9,21 @@ using Bioware.GFF.List;
 using Bioware.GFF.Struct;
 using Bioware.GFF.XML.Exception;
 
+using Error = Bioware.GFF.XML.Exception.Error;
+
 namespace Bioware.GFF.XML {
     public class GXmlDocument {
-        public GRootStruct RootStruct { get { return xread.RootStruct; } }
-        GXmlReader xread;
-        GXmlWriter xwrite;
+        private readonly GXmlReader xread;
+        private readonly GXmlWriter xwrite;
         public GXmlDocument() {
             xread = new GXmlReader();
             xwrite = new GXmlWriter();
         }
-        public GXmlDocument(string path)
-            : this() {
+        public GXmlDocument(string path) : this() {
             Load(path);
+        }
+        public GRootStruct RootStruct {
+            get { return xread.RootStruct; }
         }
         public void Load(string path) {
             xread.Load(path);
@@ -28,15 +32,11 @@ namespace Bioware.GFF.XML {
             xwrite.Save(root, path);
         }
     }
-    class GXmlReader : GXmlBase {
-
-        public GRootStruct RootStruct { get; private set; }
-
+    internal class GXmlReader : GXmlBase {
         public const int SCLASS_IN_FIELD = 0;
         public const int SCLASS_IN_LIST = 1;
         public const int SCLASS_ROOT = 2;
-
-        public GXmlReader() { }
+        public GRootStruct RootStruct { get; private set; }
 
         public void Load(string path) {
             Initialize();
@@ -45,23 +45,23 @@ namespace Bioware.GFF.XML {
                 xdoc.Load(path);
             }
             xroot = xdoc.SelectSingleNode("/" + E_STRUCT);
-            RootStruct = (GRootStruct)CreateComponent(xroot);
+            RootStruct = (GRootStruct) CreateComponent(xroot);
         }
-        string GetLabel(XmlNode node) {
+        private string GetLabel(XmlNode node) {
             if (node.Attributes[A_LABEL] != null) {
                 return node.Attributes[A_LABEL].Value;
             } else {
-                throw new FileException(Bioware.GFF.XML.Exception.Error.CAN_NOT_GET_LABEL);
+                throw new FileException(Error.CanNotGetLabel);
             }
         }
-        uint GetStructType(XmlNode node) {
+        private uint GetStructType(XmlNode node) {
             if (node.Attributes[A_TYPE] != null) {
                 return uint.Parse(node.Attributes[A_TYPE].Value);
             } else {
-                throw new FileException(Bioware.GFF.XML.Exception.Error.CAN_NOT_GET_STRUCT_TYPE);
+                throw new FileException(Error.CanNotGetStructType);
             }
         }
-        int GetStructClass(XmlNode node) {
+        private int GetStructClass(XmlNode node) {
             XmlNode parent = node.ParentNode;
             if (parent != xdoc) {
                 if (parent.Name == E_LIST) {
@@ -73,14 +73,14 @@ namespace Bioware.GFF.XML {
                 return SCLASS_ROOT;
             }
         }
-        GType GetFieldType(XmlNode node) {
+        private GType GetFieldType(XmlNode node) {
             if (node.Attributes[A_TYPE] != null) {
-                return (GType)Enum.Parse(typeof(GType), node.Attributes[A_TYPE].Value);
+                return (GType) Enum.Parse(typeof (GType), node.Attributes[A_TYPE].Value);
             } else {
-                throw new FileException(Bioware.GFF.XML.Exception.Error.CAN_NOT_GET_FIELD_TYPE);
+                throw new FileException(Error.CanNotGetFieldType);
             }
         }
-        GComponent CreateComponent(XmlNode node) {
+        private GComponent CreateComponent(XmlNode node) {
             GComponent cpnt = null;
             switch (node.Name) {
                 case E_STRUCT:
@@ -104,7 +104,7 @@ namespace Bioware.GFF.XML {
                     break;
             }
             if (cpnt is GComposite) {
-                GComposite cpsit = (GComposite)cpnt;
+                var cpsit = (GComposite) cpnt;
                 foreach (XmlNode child in node.ChildNodes) {
                     cpsit.Add(CreateComponent(child));
                 }
@@ -120,16 +120,12 @@ namespace Bioware.GFF.XML {
             if (node.Attributes[A_EXTENTION] != null) {
                 return node.Attributes[A_EXTENTION].Value;
             } else {
-                throw new FileException(Bioware.GFF.XML.Exception.Error.CAN_NOT_GET_EXTENTION);
+                throw new FileException(Error.CanNotGetExtention);
             }
-
         }
     }
-    class GXmlWriter : GXmlBase {
-
-        GRootStruct RootStruct;
-
-        public GXmlWriter() { }
+    internal class GXmlWriter : GXmlBase {
+        private GRootStruct RootStruct;
 
         public void Save(GRootStruct root, string path) {
             Initialize();
@@ -141,13 +137,13 @@ namespace Bioware.GFF.XML {
             } else {
                 fs = new FileStream(path, FileMode.Create);
             }
-            xdoc.AppendChild(xdoc.CreateXmlDeclaration("1.0", LatinEncoding.NAME, "yes"));
+            xdoc.AppendChild(xdoc.CreateXmlDeclaration("1.0", LatinEncoding.Name, "yes"));
             Write(xdoc, RootStruct);
             xdoc.Save(fs);
             fs.Close();
         }
 
-        void Write(XmlNode x_root, GComponent v_child) {
+        private void Write(XmlNode x_root, GComponent v_child) {
             XmlElement x_child = null;
             if (v_child is GStruct) {
                 x_child = xdoc.CreateElement(E_STRUCT);
@@ -156,11 +152,11 @@ namespace Bioware.GFF.XML {
             } else if (v_child is GField) {
                 x_child = xdoc.CreateElement(E_FIELD);
             } else {
-                throw new ComponentException(Bioware.GFF.Exception.Error.UNKNOWN_COMPONENT_TYPE);
+                throw new ComponentException(GFF.Exception.Error.UnknownComponentType);
             }
             WriteLabel(x_child, v_child);
             if (v_child is GStruct) {
-                WriteStruct(x_child, (GStruct)v_child);
+                WriteStruct(x_child, (GStruct) v_child);
             } else if (v_child is GField) {
                 WriteField(x_child, v_child);
             }
@@ -168,33 +164,33 @@ namespace Bioware.GFF.XML {
             x_root.AppendChild(x_child);
 
             if (v_child is GComposite) {
-                GComposite cv_child = (GComposite)v_child;
+                var cv_child = (GComposite) v_child;
                 foreach (GComponent v_child2 in cv_child) {
                     Write(x_child, v_child2);
                 }
             }
         }
-        void WriteStruct(XmlElement n, GStruct s) {
+        private void WriteStruct(XmlElement n, GStruct s) {
             if (s is GRootStruct) {
-                n.SetAttribute(A_EXTENTION, ((GRootStruct)s).Extention);
+                n.SetAttribute(A_EXTENTION, ((GRootStruct) s).Extention);
             }
             n.SetAttribute(A_TYPE, s.StructType.ToString());
         }
-        void WriteField(XmlElement n, GComponent c) {
-            GField fld = (GField)c;
-            n.SetAttribute(A_TYPE, Enum.GetName(typeof(GType), fld.Type));
+        private void WriteField(XmlElement n, GComponent c) {
+            var fld = (GField) c;
+            n.SetAttribute(A_TYPE, Enum.GetName(typeof (GType), fld.Type));
             string data = fld.Value;
             if (data != String.Empty) {
                 n.AppendChild(xdoc.CreateTextNode(data));
             }
         }
-        void WriteLabel(XmlElement n, GComponent c) {
+        private void WriteLabel(XmlElement n, GComponent c) {
             if (c.Label != null && c.Label != String.Empty) {
                 n.SetAttribute(A_LABEL, c.Label);
             }
         }
     }
-    class GXmlBase {
+    internal class GXmlBase {
         public const string EXT = ".xml";
         public const string E_STRUCT = "struct";
         public const string E_LIST = "list";
@@ -202,13 +198,11 @@ namespace Bioware.GFF.XML {
         public const string A_LABEL = "label";
         public const string A_TYPE = "type";
         public const string A_EXTENTION = "ext";
+        protected string path;
         protected XmlDocument xdoc;
         protected XmlNode xroot;
-        protected string path;
         protected void Initialize() {
             xdoc = new XmlDocument();
-        }
-        public GXmlBase() {
         }
     }
 }

@@ -1,11 +1,26 @@
-﻿using System.IO;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
-using System;
+
 namespace Bioware {
     public class ResRef {
         public const int LENGTH = 16;
-        string value;
+        private string _value;
+        public ResRef(char[] resRef) {
+            CharTable = resRef;
+        }
+        public ResRef(string resRef) {
+            TestLength(resRef.ToCharArray());
+            _value = resRef;
+        }
+        public char[] CharTable {
+            get { return _value.PadRight(LENGTH, '\0').ToCharArray(); }
+            set {
+                TestLength(value);
+                _value = new string(value).TrimEnd('\0').Trim().ToLower();
+            }
+        }
         public static implicit operator string(ResRef resref) {
             return resref.ToString();
         }
@@ -19,133 +34,125 @@ namespace Bioware {
             return !(r1.Equals(r2));
         }
         public override bool Equals(object obj) {
-            ResRef rr = obj as ResRef;
+            var rr = obj as ResRef;
             if (rr != null) {
-                return (rr.value == value);
+                return (rr._value == _value);
             }
             return false;
         }
         public override int GetHashCode() {
-            return BitConverter.ToInt32(Encoding.ASCII.GetBytes(this.value), 0);
+            return BitConverter.ToInt32(Encoding.ASCII.GetBytes(_value), 0);
         }
         public override string ToString() {
-            return value;
+            return _value;
         }
-        public char[] CharTable {
-            get {
-                return value.PadRight(LENGTH, '\0').ToCharArray();
-            }
-            set {
-                test_length(value);
-                this.value = new string(value).TrimEnd('\0').Trim().ToLower();
-            }
-        }
-        public ResRef(char[] res_ref) {
-            CharTable = res_ref;
-        }
-        public ResRef(string res_ref) {
-            test_length(res_ref.ToCharArray());
-            this.value = res_ref;
-        }
-        private void test_length(char[] resref) {
+
+        private static void TestLength(char[] resref) {
             if (resref.Length > LENGTH) {
                 throw new ApplicationException("ResRef trop long.");
             }
         }
     }
     public enum ResType : ushort {
-        bmp = 1,
-        tga = 3,
-        wav = 4,
-        plt = 6,
-        ini = 7,
-        txt = 10,
-        mdl = 2002,
-        nss = 2009,
-        ncs = 2010,
-        are = 2012,
-        set = 2013,
-        ifo = 2014,
-        bic = 2015,
-        wok = 2016,
-        dda = 2017,
-        txi = 2022,
-        git = 2023,
-        uti = 2025,
-        utc = 2027,
-        dlg = 2029,
-        itp = 2030,
-        utt = 2032,
-        dds = 2033,
-        uts = 2035,
-        ltr = 2036,
-        gff = 2037,
-        fac = 2038,
-        ute = 2040,
-        utd = 2042,
-        utp = 2044,
-        dft = 2045,
-        gic = 2046,
-        gui = 2047,
-        utm = 2051,
-        dwk = 2052,
-        pwk = 2053,
-        jrl = 2056,
-        utw = 2058,
-        ssf = 2060,
-        ndb = 2064,
-        ptm = 2065,
-        ptt = 2066
+        Bmp = 1,
+        Tga = 3,
+        Wav = 4,
+        Plt = 6,
+        Ini = 7,
+        Txt = 10,
+        Mdl = 2002,
+        Nss = 2009,
+        Ncs = 2010,
+        Are = 2012,
+        Set = 2013,
+        Ifo = 2014,
+        Bic = 2015,
+        Wok = 2016,
+        Dda = 2017,
+        Txi = 2022,
+        Git = 2023,
+        Uti = 2025,
+        Utc = 2027,
+        Dlg = 2029,
+        Itp = 2030,
+        Utt = 2032,
+        Dds = 2033,
+        Uts = 2035,
+        Ltr = 2036,
+        Gff = 2037,
+        Fac = 2038,
+        Ute = 2040,
+        Utd = 2042,
+        Utp = 2044,
+        Dft = 2045,
+        Gic = 2046,
+        Gui = 2047,
+        Utm = 2051,
+        Dwk = 2052,
+        Pwk = 2053,
+        Jrl = 2056,
+        Utw = 2058,
+        Ssf = 2060,
+        Ndb = 2064,
+        Ptm = 2065,
+        Ptt = 2066
     }
     public class BinaryReader : System.IO.BinaryReader {
-        public Stream Stream { set; get; }
-        public BinaryReader(Stream stream)
-            : base(stream, LatinEncoding.LATIN1) {
+        public BinaryReader(Stream stream) : base(stream, LatinEncoding.Latin1) {
             Stream = stream;
         }
+        public Stream Stream { set; get; }
         public Queue<uint> GetUInt32Queue(int count) {
-            Queue<uint> q = new Queue<uint>(count);
+            var q = new Queue<uint>(count);
             for (int i = 0; i < count; i++) {
                 q.Enqueue(ReadUInt32());
             }
             return q;
         }
         public List<uint> GetUInt32List(int count) {
-            List<uint> l = new List<uint>(count);
-            for (int i = 0; i < count; i++) {
+            var l = new List<uint>(count);
+            for (var i = 0; i < count; i++) {
                 l.Add(ReadUInt32());
             }
             return l;
         }
         public Queue<int> GetInt32Queue(int count) {
-            Queue<int> q = new Queue<int>(count);
-            for (int i = 0; i < count; i++) {
+            var q = new Queue<int>(count);
+            for (var i = 0; i < count; i++) {
                 q.Enqueue(ReadInt32());
             }
             return q;
         }
         public List<int> GetInt32List(int count) {
-            List<int> l = new List<int>(count);
-            for (int i = 0; i < count; i++) {
+            var l = new List<int>(count);
+            for (var i = 0; i < count; i++) {
                 l.Add(ReadInt32());
             }
             return l;
         }
     }
     public class BinaryWriter : System.IO.BinaryWriter {
-        public BinaryWriter(Stream stream)
-            : base(stream, LatinEncoding.LATIN1) {
-        }
+        public BinaryWriter(Stream stream) : base(stream, LatinEncoding.Latin1) {}
     }
     public static class LatinEncoding {
-        public const string NAME = "ISO-8859-1";
-        public static Encoding LATIN1 = Encoding.GetEncoding(NAME);
+        public const string Name = "ISO-8859-1";
+        public static Encoding Latin1 = Encoding.GetEncoding(Name);
     }
     public enum Gender : uint {
-        Male = 0, None = 0, Female = 1
+        Male = 0,
+        None = 0,
+        Female = 1
     }
     public enum Lang : uint {
-        English, French, German, Italian, Spanish, Polish,
-        Korean = 128, ChineseTraditional = 129, ChineseSimplified = 130, Japanese = 131
+        English,
+        French,
+        German,
+        Italian,
+        Spanish,
+        Polish,
+        Korean = 128,
+        ChineseTraditional = 129,
+        ChineseSimplified = 130,
+        Japanese = 131
     }
 }

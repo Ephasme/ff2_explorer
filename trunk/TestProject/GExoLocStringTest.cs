@@ -10,24 +10,13 @@ namespace TestProject
     ///Classe de test pour GExoLocStringTest, destinée à contenir tous
     ///les tests unitaires GExoLocStringTest
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class GExoLocStringTest {
-
-
-        private TestContext testContextInstance;
-
         /// <summary>
         ///Obtient ou définit le contexte de test qui fournit
         ///des informations sur la série de tests active ainsi que ses fonctionnalités.
         ///</summary>
-        public TestContext TestContext {
-            get {
-                return testContextInstance;
-            }
-            set {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
         #region Attributs de tests supplémentaires
         // 
@@ -63,20 +52,20 @@ namespace TestProject
         /// <summary>
         ///Test pour ExoLocString.
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         [DeploymentItem("Bioware.dll")]
-        public void GExoLocString_ParseTest() {
-            string byte_string = "FFFFFFFF0100000000000000110000004C796F6E202D20506F727465204E6F7264";
-            string value_string = "-1||0=Lyon - Porte Nord";
-            GField fld = new GField("test", GType.CEXOLOCSTRING, HexaManip.StringToByteArray(byte_string));
-            GExoLocStringReader_Accessor a_exlocstr = new GExoLocStringReader_Accessor();
-            a_exlocstr.Parse(fld);
-            string exp_value_string = a_exlocstr.TextValue;
-            a_exlocstr.Parse(value_string);
-            string exp_byte_string = HexaManip.ByteArrayToString(a_exlocstr.ByteArray);
+        public void GExoLocStringParseTest() {
+            const string byteString = "FFFFFFFF0100000000000000110000004C796F6E202D20506F727465204E6F7264";
+            const string valueString = "-1||0=Lyon - Porte Nord";
+            var fld = new GField("test", GType.CExoLocString, HexaManip.StringToByteArray(byteString));
+            var aExlocstr = new GExoLocStringReader_Accessor();
+            aExlocstr.Parse(fld);
+            var expValueString = aExlocstr.TextValue;
+            aExlocstr.Parse(valueString);
+            var expByteString = HexaManip.ByteArrayToString(aExlocstr.ByteArray);
 
-            Assert.AreEqual<string>(exp_value_string, value_string);
-            Assert.AreEqual<string>(exp_byte_string, byte_string);
+            Assert.AreEqual(expValueString, valueString);
+            Assert.AreEqual(expByteString, byteString);
         }
     }
 }
