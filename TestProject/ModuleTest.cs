@@ -1,6 +1,7 @@
-﻿using Bioware.NWN;
+﻿using System;
+
+using Bioware.NWN;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 
 namespace TestProject
 {
@@ -10,24 +11,13 @@ namespace TestProject
     ///Classe de test pour ModuleTest, destinée à contenir tous
     ///les tests unitaires ModuleTest
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class ModuleTest {
-
-
-        private TestContext testContextInstance;
-
         /// <summary>
         ///Obtient ou définit le contexte de test qui fournit
         ///des informations sur la série de tests active ainsi que ses fonctionnalités.
         ///</summary>
-        public TestContext TestContext {
-            get {
-                return testContextInstance;
-            }
-            set {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
         #region Attributs de tests supplémentaires
         // 
@@ -59,25 +49,26 @@ namespace TestProject
         //
         #endregion
 
-        Module mod;
-        string root_path = "D:/NWN";
-        string module_name = "FFR2_V1_0a.mod";
+        Module _mod;
+        const string RootPath = "D:/NWN";
+        const string ModuleName = "FFR2_V1_0a.mod";
 
         /// <summary>
         ///Test pour Load
         ///</summary>
-        [TestMethod()]
-        public void Module_LoadTest() {
-            mod = new Module(root_path, module_name); // TODO : initialisez à une valeur appropriée
+        [TestMethod]
+        public void ModuleLoadTest() {
+            _mod = new Module(RootPath, ModuleName); // TODO : initialisez à une valeur appropriée
         }
 
         /// <summary>
         ///Test pour AreaList
         ///</summary>
-        [TestMethod()]
-        public void Module_AreaListTest() {
-            Module_LoadTest();
-            List<Area> list = mod.AreaList;
+        [TestMethod]
+        public void ModuleAreaListTest() {
+            ModuleLoadTest();
+            var nAreas = _mod.AreaList;
+            Assert.IsNotNull(nAreas);
         }
     }
 }

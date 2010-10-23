@@ -46,7 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bases.cs" />
+    <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="GFF\Exceptions.cs" />
+    <Compile Include="GFF\Field\Fields.cs" />
     <Compile Include="GFF\ListAndStruct.cs" />
     <Compile Include="GFF\Fields.cs" />
     <Compile Include="GFF\Frames.cs" />

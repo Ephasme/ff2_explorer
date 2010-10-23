@@ -1,0 +1,6 @@
+<Modules>
+  <Module PersistentId="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA" ModuleId="BiowareSystem" />
+  <Module PersistentId="4386F374-C1F4-49D4-817A-9E0D08C3CA18" ModuleId="TestProject" />
+  <Module PersistentId="A3D8FDC3-16EE-4551-8C2E-B045A85ADF9F" ModuleId="QuickModem" />
+  <Module PersistentId="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" ModuleId="mscorlib" />
+</Modules>

@@ -127,7 +127,7 @@ namespace QuickModem {
         private void GetModuleDirectory() {
             while (!File.Exists(modDirName)) {
                 var di_basedir = new DirectoryInfo(baseDirName + "/modules");
-                var l_fi_modules = di_basedir.GetFiles("*" + EFile.MOD_EXT);
+                var l_fi_modules = di_basedir.GetFiles("*" + EFile.ModExt);
                 int choice = -1;
                 bool choice_ok = false;
                 while (choice_ok == false) {
