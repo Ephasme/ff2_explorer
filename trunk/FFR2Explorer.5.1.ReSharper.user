@@ -112,7 +112,6 @@
       <File id="4386F374-C1F4-49D4-817A-9E0D08C3CA18/f:ModuleTest.cs" caret="2107" fromTop="38" />
       <File id="4386F374-C1F4-49D4-817A-9E0D08C3CA18/f:VertexTest.cs" caret="2093" fromTop="20" />
       <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:NWN/f:Module.cs" caret="136" fromTop="7" />
-      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:Fields.cs" caret="173" fromTop="6" />
       <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:XML.cs" caret="0" fromTop="0" />
       <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:Exceptions.cs" caret="1137" fromTop="23" />
       <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:Frames.cs" caret="768" fromTop="20" />
@@ -120,7 +119,7 @@
       <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="25698" fromTop="560" />
       <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/f:Bases.cs" caret="169" fromTop="7" />
       <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:Resources/f:Resources.cs" caret="0" fromTop="0" />
-      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:Geometry/f:Geometry.cs" caret="595" fromTop="17" />
+      <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:Geometry/f:Geometry.cs" caret="397" fromTop="11" />
     </RecentFiles>
     <RecentEdits>
       <File id="FDAF5CB3-6521-4E7B-B1BA-1BF83C179FEA/d:GFF/f:System.cs" caret="2971" fromTop="8" />
