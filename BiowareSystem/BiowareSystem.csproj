@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -12,6 +12,26 @@
     <AssemblyName>BiowareSystem</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,20 +65,94 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bases.cs" />
-    <Compile Include="Geometry\Geometry.cs" />
-    <Compile Include="GFF\Exceptions.cs" />
-    <Compile Include="GFF\Field\Fields.cs" />
-    <Compile Include="GFF\ListAndStruct.cs" />
-    <Compile Include="GFF\Frames.cs" />
-    <Compile Include="GFF\System.cs" />
-    <Compile Include="NWN\Area.cs" />
+    <Compile Include="Container.cs" />
+    <Compile Include="DirectoryContainer.cs" />
+    <Compile Include="Erf\ErfFile.cs" />
+    <Compile Include="Erf\ErfHeader.cs" />
+    <Compile Include="Erf\ErfKeyFrame.cs" />
+    <Compile Include="Erf\ErfResFrame.cs" />
+    <Compile Include="Geometry\Vector.cs" />
+    <Compile Include="Geometry\Vertex.cs" />
+    <Compile Include="GFF\Exception\ComponentException.cs" />
+    <Compile Include="GFF\Exception\CompositeException.cs" />
+    <Compile Include="GFF\Exception\ErrorLabels.cs" />
+    <Compile Include="GFF\Exception\FieldException.cs" />
+    <Compile Include="GFF\Field\GffByteReader.cs" />
+    <Compile Include="GFF\Field\GffCharReader.cs" />
+    <Compile Include="GFF\Field\GffDoubleReader.cs" />
+    <Compile Include="GFF\Field\GffDword64Reader.cs" />
+    <Compile Include="GFF\Field\GffDwordReader.cs" />
+    <Compile Include="GFF\Field\GffExoLocField.cs" />
+    <Compile Include="GFF\Field\GffExoLocStringReader.cs" />
+    <Compile Include="GFF\Field\GffExoStringReader.cs" />
+    <Compile Include="GFF\Field\GffField.cs" />
+    <Compile Include="GFF\Field\GffFloatReader.cs" />
+    <Compile Include="GFF\Field\GffInt64Reader.cs" />
+    <Compile Include="GFF\Field\GffIntReader.cs" />
+    <Compile Include="GFF\Field\GffResRefReader.cs" />
+    <Compile Include="GFF\Field\GffShortReader.cs" />
+    <Compile Include="GFF\Field\GffWordReader.cs" />
+    <Compile Include="GFF\Field\IValueReader.cs" />
+    <Compile Include="GFF\Exception\FileException.cs" />
+    <Compile Include="GFF\GffBase.cs" />
+    <Compile Include="GFF\GffComposite.cs" />
+    <Compile Include="GFF\GffConst.cs" />
+    <Compile Include="GFF\GffDocument.cs" />
+    <Compile Include="GFF\GffFactory.cs" />
+    <Compile Include="GFF\GffFieldFrame.cs" />
+    <Compile Include="GFF\GffHeader.cs" />
+    <Compile Include="GFF\GffInFieldStruct.cs" />
+    <Compile Include="GFF\GffInListStruct.cs" />
+    <Compile Include="GFF\GffList.cs" />
+    <Compile Include="GFF\GffReader.cs" />
+    <Compile Include="GFF\GffRootStruct.cs" />
+    <Compile Include="GFF\GffStructFrame.cs" />
+    <Compile Include="GFF\GffType.cs" />
+    <Compile Include="GFF\GffWriter.cs" />
+    <Compile Include="GFF\GffXmlBase.cs" />
+    <Compile Include="GFF\GffXmlReader.cs" />
+    <Compile Include="GFF\GffXmlWriter.cs" />
+    <Compile Include="GFF\GffXmlDocument.cs" />
+    <Compile Include="Key\BiffFile.cs" />
+    <Compile Include="Key\BiffHeader.cs" />
+    <Compile Include="Key\KeyHeader.cs" />
+    <Compile Include="Key\KeyFile.cs" />
+    <Compile Include="Key\BiffResource.cs" />
+    <Compile Include="NWN\NArea.cs" />
+    <Compile Include="NWN\NAreaTransition.cs" />
+    <Compile Include="NWN\NItem.cs" />
+    <Compile Include="NWN\NtAreaTransition.cs" />
+    <Compile Include="NWN\NTrap.cs" />
+    <Compile Include="NWN\NTrigger.cs" />
+    <Compile Include="ResourceManager.cs" />
+    <Compile Include="ResType.cs" />
+    <Compile Include="Gender.cs" />
+    <Compile Include="Geometry\GeometricException.cs" />
+    <Compile Include="GFF\Field\GffFieldData.cs" />
+    <Compile Include="GFF\GffStruct.cs" />
+    <Compile Include="GFF\GffBasicFrame.cs" />
+    <Compile Include="GFF\GffComponent.cs" />
+    <Compile Include="Lang.cs" />
+    <Compile Include="LatinBinaryReader.cs" />
+    <Compile Include="LatinBinaryWriter.cs" />
+    <Compile Include="LatinEncoding.cs" />
+    <Compile Include="NWN\NObject.cs" />
     <Compile Include="NWN\Module.cs" />
-    <Compile Include="Resources\Resources.cs" />
+    <Compile Include="ContentObject.cs" />
+    <Compile Include="ResRef.cs" />
+    <Compile Include="TdaAdapter.cs" />
+    <Compile Include="TdaAdapterRow.cs" />
     <Compile Include="Tools.cs" />
-    <Compile Include="GFF\XML.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
